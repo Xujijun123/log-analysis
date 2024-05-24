@@ -42,7 +42,7 @@ def fetch_logs(page, per_page):
 
 @app.route('/')
 def index():
-    return render_template('dashboard.html')
+    return render_template('Operator_Mainpage.html')
 
 
 @app.route('/logs')
