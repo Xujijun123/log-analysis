@@ -1,1 +1,1 @@
-SELECT * FROM logdatabase.operator;
+SELECT * FROM logdatabase.hdfs_structured;
