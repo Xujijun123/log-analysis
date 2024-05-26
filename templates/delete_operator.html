@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Operator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 50%;
+            margin: 50px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label, select {
+            margin-bottom: 10px;
+        }
+        select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            background-color: #e74c3c;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Delete Operator</h1>
+        <form method="post">
+            <label for="operator_id">Select Operator to Delete</label>
+            <select id="operator_id" name="operator_id" required>
+                {% for operator in operators %}
+                <option value="{{ operator[0] }}">{{ operator[1] }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Delete Operator</button>
+        </form>
+    </div>
+</body>
+</html>

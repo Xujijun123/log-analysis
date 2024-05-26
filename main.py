@@ -8,7 +8,7 @@ app = Flask(__name__)
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '0210070029Xu',
+    'password': '',
     'database': 'logdatabase',
     'port': 3306,
     'ssl': {'ssl': {}}
@@ -44,32 +44,104 @@ def fetch_logs(page, per_page):
 def index():
     return redirect(url_for('login'))
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        repassword = request.form['repassword']
+        email = request.form['email']
+        role = request.form['role']
+        code = request.form['code'] if 'code' in request.form else None
+        
+        # 验证两次输入的密码是否一致
+        if password != repassword:
+            return redirect(url_for('register', error='两次密码不一致'))
+        
+        # 验证系统管理员的验证码
+        code_list = ['123456','654321']
+        if role == 'systemadmin' and code not in code_list:
+            return redirect(url_for('register', error='验证码错误'))
+        
+        try:
+            connection = pymysql.connect(**db_config)
+            cursor = connection.cursor()
+            
+            # 判断用户名和邮箱是否已被注册
+            table = 'operator' if role == 'operator' else 'systemadmins'
+            sql = f"SELECT * FROM {table} WHERE username = %s OR email = %s"
+            cursor.execute(sql, (username, email))
+            result = cursor.fetchone()
+            if result:
+                if result[1] == username:
+                    return redirect(url_for('register', error='该用户名已被注册'))
+                if result[3] == email:  # Assuming email is the 4th column in your table
+                    return redirect(url_for('register', error='该邮箱已被注册'))
+                return redirect(url_for('register'))
+            
+            # 向数据库中插入新用户
+            if role == 'operator':
+                sql = "INSERT INTO operator (username, password, email, 注销状况) VALUES (%s, %s, %s, %s)"
+                cursor.execute(sql, (username, password, email, False))
+            else:
+                sql = "INSERT INTO systemadmins (username, password, email, code, 注销状况) VALUES (%s, %s, %s, %s, %s)"
+                cursor.execute(sql, (username, password, email, code, False))
+            connection.commit()
+
+            return redirect(url_for('login', success='注册成功，请登录'))
+        
+        except pymysql.MySQLError as e:
+            return redirect(url_for('register', error=f'数据库错误：{e}'))
+        
+        finally:
+            cursor.close()
+            connection.close()
+    
+    error = request.args.get('error')
+    return render_template('register.html', error=error)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        # 这里可以添加验证用户名和密码的逻辑，例如查询数据库进行验证
-        # 如果验证成功，可以设置用户登录状态，并重定向到操作员主页
-        connection = pymysql.connect(**db_config)
-        cursor = connection.cursor()
-        sql = "SELECT * FROM operator WHERE username=%s AND password=%s"
-        cursor.execute(sql, (username, password))
-        user = cursor.fetchone()
-        cursor.close()
-        connection.close()
-        if user:
-            # 这里设置用户登录状态，可以使用 session 或者其他方式来保存登录状态
-            return redirect(url_for('operator_mainpage'))
-        else:
-            # 如果验证失败，可以返回登录页面并显示错误消息
-            error_message = 'Invalid username or password. Please try again.'
-            return render_template('login.html', error_message=error_message)
-    else:
-        return render_template('login.html')
+        role = request.form['role']
+        
+        try:
+            connection = pymysql.connect(**db_config)
+            cursor = connection.cursor()
+            
+            # 根据角色选择相应的表
+            table = 'operator' if role == 'operator' else 'systemadmins'
+            sql = f"SELECT * FROM {table} WHERE username = %s AND password = %s"
+            cursor.execute(sql, (username, password))
+            user = cursor.fetchone()
+            
+            cursor.close()
+            connection.close()
+            
+            if user:
+                if role == 'operator':
+                    return redirect(url_for('operator_mainpage'))
+                else:
+                    return redirect(url_for('admin_mainpage'))
+            else:
+                return redirect(url_for('login', error='用户名或密码错误'))
+        
+        except pymysql.MySQLError as e:
+            return redirect(url_for('login', error=f'数据库错误：{e}'))
+    
+    error = request.args.get('error')
+    success = request.args.get('success')
+    return render_template('login.html', error=error, success=success)
+    
 @app.route('/operator_mainpage')
 def operator_mainpage():
     return render_template('operator_mainpage.html')
+
+@app.route('/admin_mainpage')
+def admin_mainpage():
+    return render_template('admin_mainpage.html')
 
 @app.route('/logs')
 def view_logs():
@@ -78,6 +150,79 @@ def view_logs():
     logs_df, total = fetch_logs(page, per_page)
     total_pages = (total + per_page - 1) // per_page
     return render_template('logs.html', logs=logs_df.to_html(), page=page, total_pages=total_pages)
+
+@app.route('/manage_operators/view', methods=['GET'])
+def view_operators():
+    try:
+        connection = pymysql.connect(**db_config)
+        cursor = connection.cursor()
+        sql = "SELECT id, username, email FROM operator"
+        cursor.execute(sql)
+        operators = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return render_template('view_operators.html', operators=operators)
+    except pymysql.MySQLError as e:
+        return render_template('admin_mainpage', error=f'数据库错误：{e}')
+
+@app.route('/manage_operators/add', methods=['GET', 'POST'])
+def add_operator():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        email = request.form['email']
+        try:
+            connection = pymysql.connect(**db_config)
+            cursor = connection.cursor()
+            
+            # 检查用户名或邮箱是否已经存在
+            sql = "SELECT * FROM operator WHERE username = %s OR email = %s"
+            cursor.execute(sql, (username, email))
+            result = cursor.fetchone()
+            if result:
+                cursor.close()
+                connection.close()
+                return redirect(url_for('add_operator', error='用户名或邮箱已存在'))
+            
+            # 插入新运维人员
+            sql = "INSERT INTO operator (username, password, email, 注销状况) VALUES (%s, %s, %s, %s)"
+            cursor.execute(sql, (username, password, email, False))
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return redirect(url_for('view_operators'))
+        except pymysql.MySQLError as e:
+            return redirect(url_for('add_operator', error=f'数据库错误：{e}'))
+    error = request.args.get('error')
+    return render_template('add_operator.html', error=error)
+
+
+@app.route('/manage_operators/delete', methods=['GET', 'POST'])
+def delete_operator():
+    if request.method == 'POST':
+        operator_id = request.form['operator_id']
+        try:
+            connection = pymysql.connect(**db_config)
+            cursor = connection.cursor()
+            sql = "DELETE FROM operator WHERE id = %s"
+            cursor.execute(sql, (operator_id,))
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return redirect(url_for('view_operators'))
+        except pymysql.MySQLError as e:
+            return render_template('delete_operator.html', error=f'数据库错误：{e}')
+    try:
+        connection = pymysql.connect(**db_config)
+        cursor = connection.cursor()
+        sql = "SELECT id, username FROM operator"
+        cursor.execute(sql)
+        operators = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return render_template('delete_operator.html', operators=operators)
+    except pymysql.MySQLError as e:
+        return render_template('admin_mainpage', error=f'数据库错误：{e}')
 
 
 if __name__ == '__main__':
