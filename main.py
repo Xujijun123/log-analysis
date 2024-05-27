@@ -198,6 +198,16 @@ def view_logs():
     total_pages = (total + per_page - 1) // per_page
     return render_template('logs.html', logs=logs_df.to_html(classes='log-table', index=False), page=page,
                            total_pages=total_pages, log_type=log_type)
+
+
+@app.route('/log_analysis')
+def log_analysis():
+    return render_template('log_analysis.html')
+
+@app.route('/event_frequency')
+def event_frequency():
+    return render_template('event_frequency.html')
+
 @app.route('/manage_operators/view', methods=['GET'])
 def view_operators():
     try:
@@ -270,6 +280,7 @@ def delete_operator():
         return render_template('delete_operator.html', operators=operators)
     except pymysql.MySQLError as e:
         return render_template('admin_mainpage', error=f'数据库错误：{e}')
+
 
 
 if __name__ == '__main__':
