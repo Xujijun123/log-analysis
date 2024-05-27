@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日志检索</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #333;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar img {
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto;
+            width: 80px;
+        }
+        .sidebar h2 {
+            text-align: center;
+            margin: 10px 0;
+        }
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        .sidebar nav ul li {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .sidebar nav ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar nav ul li a:hover {
+            color: #ddd;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .card {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-control, .btn {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+        hr {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+		.pagination {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 100%;
+		}
+
+		.pagination ul {
+			display: flex;
+			list-style: none;
+			padding: 0;
+			margin: 0;  
+		}
+
+		.pagination li {
+			margin: 0 10px;
+		}
+
+		.pagination li a, .pagination li span {
+			text-decoration: none;
+			padding: 5px 10px;
+			color: #007bff;
+		}
+
+		.pagination li.active span, .pagination li.disabled span {
+			color: #6c757d;
+		}
+
+		.pagination li a:hover {
+			text-decoration: underline;
+		}
+
+
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <img src="{{ url_for('static', filename='images/avatar.png') }}" alt="User Avatar">
+        <h2>Username</h2>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/logs">日志查看</a></li>
+                <li><a href="/search_logs">日志检索</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="content">
+        <h1>日志检索</h1>
+        <div class="card">
+            <form action="/search_logs" method="get">
+                <input type="text" class="form-control" name="LineId" placeholder="LineId">
+                <input type="date" class="form-control" name="Date" placeholder="日期">
+                <input type="text" class="form-control" name="Time" placeholder="时间">
+                <input type="text" class="form-control" name="Pid" placeholder="Pid">
+                <select class="form-control" name="Level">
+                    <option value="">所有级别</option>
+                    <option value="INFO">INFO</option>
+                    <option value="ERROR">ERROR</option>
+                    <option value="WARNING">WARNING</option>
+                </select>
+                <input type="text" class="form-control" name="Component" placeholder="组件">
+                <input type="text" class="form-control" name="Content" placeholder="内容搜索">
+                <input type="text" class="form-control" name="EventId" placeholder="EventId">
+                <input type="text" class="form-control" name="EventTemplate" placeholder="EventTemplate">
+                <button type="submit" class="btn btn-primary">搜索</button>
+            </form>
+            <hr>
+            {% if logs %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>LineId</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Pid</th>
+                            <th>Level</th>
+                            <th>Component</th>
+                            <th>Content</th>
+                            <th>EventId</th>
+                            <th>EventTemplate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log.LineId }}</td>
+                            <td>{{ log.Date }}</td>
+                            <td>{{ log.Time }}</td>
+                            <td>{{ log.Pid }}</td>
+                            <td>{{ log.Level }}</td>
+                            <td>{{ log.Component }}</td>
+                            <td>{{ log.Content }}</td>
+                            <td>{{ log.EventId }}</td>
+                            <td>{{ log.EventTemplate }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>未找到日志。</p>
+            {% endif %}
+        </div>
+		<div class="pagination">
+            <ul>
+                {% if page > 1 %}
+                    <li><a href="/logs?page=1">1</a></li>
+                    {% if page > 2 %}
+                        <li>...</li>
+                    {% endif %}
+                    <li><a href="/logs?page={{ page - 1 }}">Previous</a></li>
+                {% endif %}
+                <li><a href="#" class="active">{{ page }}</a></li>
+                {% if page < total_pages %}
+                    <li><a href="/logs?page={{ page + 1 }}">Next</a></li>
+                    {% if page < total_pages - 1 %}
+                        <li>...</li>
+                    {% endif %}
+                    <li><a href="/logs?page={{ total_pages }}">{{ total_pages }}</a></li>
+                {% endif %}
+            </ul>
+		</div>
+    </div>
+</body>
+</html>
