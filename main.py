@@ -8,36 +8,14 @@ app = Flask(__name__)
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '',
+    'password': '0210070029Xu',
     'database': 'logdatabase',
     'port': 3306,
     'ssl': {'ssl': {}}
 }
 
 
-def fetch_logs(page, per_page):
-    try:
-        # 连接数据库
-        connection = pymysql.connect(**db_config)
 
-        # 查询数据
-        sql = 'SELECT * FROM hdfs_structured'
-        df = pd.read_sql(sql, connection)
-
-        # 关闭数据库连接
-        connection.close()
-
-        # 计算分页数据
-        total = len(df)
-        start = (page - 1) * per_page
-        end = start + per_page
-        logs = df.iloc[start:end]
-
-        return logs, total
-
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        return None, 0
 
 @app.route('/search_logs', methods=['GET'])
 def search_logs():
@@ -186,15 +164,40 @@ def operator_mainpage():
 @app.route('/admin_mainpage')
 def admin_mainpage():
     return render_template('admin_mainpage.html')
+def fetch_logs(page, per_page, log_type):
+    try:
+        # 连接数据库
+        connection = pymysql.connect(**db_config)
+
+        # 查询数据
+        table_name = f'{log_type}_structured'
+        sql = f'SELECT * FROM {table_name}'
+        df = pd.read_sql(sql, connection)
+
+        # 关闭数据库连接
+        connection.close()
+
+        # 计算分页数据
+        total = len(df)
+        start = (page - 1) * per_page
+        end = start + per_page
+        logs = df.iloc[start:end]
+
+        return logs, total
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return None, 0
 
 @app.route('/logs')
 def view_logs():
     page = request.args.get('page', 1, type=int)
     per_page = 10
-    logs_df, total = fetch_logs(page, per_page)
+    log_type = request.args.get('log_type', 'hdfs')  # 默认为HDFS日志
+    logs_df, total = fetch_logs(page, per_page, log_type)
     total_pages = (total + per_page - 1) // per_page
-    return render_template('logs.html', logs=logs_df.to_html(), page=page, total_pages=total_pages)
-
+    return render_template('logs.html', logs=logs_df.to_html(classes='log-table', index=False), page=page,
+                           total_pages=total_pages, log_type=log_type)
 @app.route('/manage_operators/view', methods=['GET'])
 def view_operators():
     try:

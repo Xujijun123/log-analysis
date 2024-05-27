@@ -12,50 +12,43 @@
             padding: 0;
         }
         .sidebar {
-        width: 250px;
-        background-color: #333;
-        color: white;
-        height: 100vh;
-        position: fixed;
-        padding-top: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center; /* 水平居中 */
+            width: 250px;
+            background-color: #333;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-
         .sidebar img {
             border-radius: 50%;
             display: block;
             margin: 0 auto;
             width: 80px;
         }
-
         .sidebar h2 {
             text-align: center;
             margin: 10px 0;
         }
-
         .sidebar nav ul {
             list-style: none;
             padding: 0;
             margin: 20px 0;
         }
-
         .sidebar nav ul li {
             margin-bottom: 10px;
             text-align: center;
         }
-
         .sidebar nav ul li a {
             color: white;
             text-decoration: none;
             display: block;
         }
-
         .sidebar nav ul li a:hover {
             color: #ddd;
         }
-
         .content {
             margin-left: 250px;
             padding: 20px;
@@ -78,37 +71,63 @@
             padding: 10px;
             text-align: left;
         }
-		.pagination {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			width: 100%;
-		}
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        .pagination ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .pagination li {
+            margin: 0 10px;
+        }
+        .pagination li a, .pagination li span {
+            text-decoration: none;
+            padding: 5px 10px;
+            color: #007bff;
+        }
+        .pagination li.active span, .pagination li.disabled span {
+            color: #6c757d;
+        }
+        .pagination li a:hover {
+            text-decoration: underline;
+        }
+        .log-buttons {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+        }
+        .log-buttons button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .log-table {
+            width: auto; /* 将表格宽度设置为自适应 */
+            margin-top: 20px;
+            overflow-x: auto; /* 启用水平滚动以处理较宽的内容 */
+            white-space: normal;
+        }
 
-		.pagination ul {
-			display: flex;
-			list-style: none;
-			padding: 0;
-			margin: 0;  
-		}
+        .log-table th, .log-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .log-table td {
+            word-wrap: break-word; /* 在单词边界处换行 */
+            white-space: normal; /* 允许文本自动换行 */
+        }
 
-		.pagination li {
-			margin: 0 10px;
-		}
-
-		.pagination li a, .pagination li span {
-			text-decoration: none;
-			padding: 5px 10px;
-			color: #007bff;
-		}
-
-		.pagination li.active span, .pagination li.disabled span {
-			color: #6c757d;
-		}
-
-		.pagination li a:hover {
-			text-decoration: underline;
-		}
+        .log-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -125,30 +144,35 @@
     </div>
     <div class="content">
         <h1>日志查看</h1>
+        <div class="log-buttons">
+            <button onclick="location.href='/logs?log_type=hdfs'">HDFS日志</button>
+            <button onclick="location.href='/logs?log_type=hadoop'">HADOOP日志</button>
+        </div>
         <div class="card">
-            <h3>HDFS Structured Logs</h3>
+            <h3>{{ log_type }} Logs</h3>
             {{ logs | safe }}
         </div>
         <div class="pagination">
             <form action="/logs" method="get">
+                <input type="hidden" name="log_type" value="{{ log_type }}">
                 <input type="number" name="page" min="1" max="{{ total_pages }}" value="{{ page }}">
                 <button type="submit">跳转</button>
             </form>
             <ul>
                 {% if page > 1 %}
-                    <li><a href="/logs?page=1">1</a></li>
+                    <li><a href="/logs?log_type={{ log_type }}&page=1">1</a></li>
                     {% if page > 2 %}
                         <li>...</li>
                     {% endif %}
-                    <li><a href="/logs?page={{ page - 1 }}">Previous</a></li>
+                    <li><a href="/logs?log_type={{ log_type }}&page={{ page - 1 }}">Previous</a></li>
                 {% endif %}
-                <li><a href="#" class="active">{{ page }}</a></li>
+                <li class="active"><span>{{ page }}</span></li>
                 {% if page < total_pages %}
-                    <li><a href="/logs?page={{ page + 1 }}">Next</a></li>
+                    <li><a href="/logs?log_type={{ log_type }}&page={{ page + 1 }}">Next</a></li>
                     {% if page < total_pages - 1 %}
                         <li>...</li>
                     {% endif %}
-                    <li><a href="/logs?page={{ total_pages }}">{{ total_pages }}</a></li>
+                    <li><a href="/logs?log_type={{ log_type }}&page={{ total_pages }}">{{ total_pages }}</a></li>
                 {% endif %}
             </ul>
         </div>
