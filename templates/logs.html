@@ -109,20 +109,19 @@
             cursor: pointer;
         }
         .log-table {
-            width: auto; /* 将表格宽度设置为自适应 */
+            width: auto;
             margin-top: 20px;
-            overflow-x: auto; /* 启用水平滚动以处理较宽的内容 */
-            white-space: normal;
+            overflow-x: auto ;
+            white-space: normal; /* 允许文本自动换行 */
         }
 
         .log-table th, .log-table td {
             border: 1px solid #ddd;
             padding: 8px;
-        }
-        .log-table td {
             word-wrap: break-word; /* 在单词边界处换行 */
             white-space: normal; /* 允许文本自动换行 */
         }
+
 
         .log-table th {
             background-color: #f2f2f2;
@@ -150,8 +149,9 @@
         </div>
         <div class="card">
             <h3>{{ log_type }} Logs</h3>
-            {{ logs | safe }}
+                    {{ logs | safe }}
         </div>
+
         <div class="pagination">
             <form action="/logs" method="get">
                 <input type="hidden" name="log_type" value="{{ log_type }}">
