@@ -8,7 +8,7 @@ app = Flask(__name__)
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '',
+    'password': '0210070029Xu',
     'database': 'logdatabase',
     'port': 3306,
     'ssl': {'ssl': {}}
@@ -40,9 +40,10 @@ def fetch_logs(page, per_page):
         return None, 0
 
 
+
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return render_template('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

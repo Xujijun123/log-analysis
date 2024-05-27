@@ -1,0 +1,249 @@
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LogCraft - 数据解码，系统共舞</title>
+
+    <!--======== All Stylesheet =========-->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+<!--    <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">-->
+<!--    <link href="{{ url_for('static', filename='css/linearicons.css') }}" rel="stylesheet">-->
+    <!--=== plugins ===-->
+<!--    <link href="{{ url_for('static', filename='css/owl.carousel.css') }}" rel="stylesheet">-->
+<!--    <link href="{{ url_for('static', filename='css/owl.theme..css') }}" rel="stylesheet">-->
+    <!--=== end plugins ===-->
+    <link rel="shortcut icon" href="1.png">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/responsive.css') }}" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Titillium+Web:400,900,700,600,300,200' rel='stylesheet'
+        type='text/css'>
+    <style>
+        .my-paragraph1 {
+            font-size: 30px;
+            font-family: "华光行楷_CNKI";
+        }
+
+        #main button {
+            margin-bottom: 290px;
+            padding: 20px 40px;
+            font-size: 1.8rem;
+            margin-left: -5px;
+            font-weight: 700;
+            border-radius: 40px;
+            cursor: pointer;
+            border: none;
+            color: #fff;
+
+            background-color: #01bf86;
+            animation: fade-in 0.5s forwards;
+        }
+
+        #main #enter-btn {
+            margin-left: 0px;
+        }
+
+        #main #admin-btn {
+
+            background-color: #000;
+            margin-left: 200px;
+            color: #fff;
+            animation: fade-in 0.5s forwards;
+        }
+
+        #main #admin-btn:hover {
+            background-color: #EEA23A;
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        /* 链接样式 */
+        a {
+            color: #EEA23A;
+            text-decoration: none;
+            transition: color 0.3s ease-in-out;
+        }
+
+        a:hover {
+            color: #FF6F61;
+        }
+    </style>
+</head>
+
+<body data-spy="scroll" data-target=".nav-top">
+    <!--======== header =========-->
+    <header id="home" data-spy="scroll" data-target="#top-nav">
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <!-- menu 4 -->
+                <div class="navbar navbar-default navbar-fixed-top default-menu menu-4" role="navigation">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target="#menu-4" aria-expanded="false">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand default-logo scroll" href="#home"><img src="{{ url_for('static', filename='images/promo-logo.png') }}"
+                                    alt="logo" /> LogCraft - 数据解码，系统共舞</a>
+                        </div>
+
+                        <div class="collapse navbar-collapse top-nav" id="menu-4">
+                            <ul class="nav navbar-nav navbar-right">
+                                <li><a class="scroll" href="#service">Service</a></li>
+                                <li><button type="button" class="btn btn-default navbar-btn"
+                                        onclick="location.href='rootlog.html'">Admin</button></li>
+                            </ul>
+
+                        </div </div>
+                    </div><!-- end menu -->
+                </div>
+            </div>
+    </header>
+    <!--======== end header =========-->
+
+    <!--======== intro =========-->
+    <section class="intro">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-sm-8 col-xs-12">
+                    <div class="intro-content">
+                        <h1>日志解析，洞悉系统奥秘</h1>
+                        <p class="my-paragraph1">智能日志分析，掌控系统健康，就选LogCraft！</p>
+
+                    </div>
+                    <main id="main">
+<!--                        <div class="enter-btn">-->
+<!--                          <a href="login">LOGIN</a>-->
+<!--                        </div>-->
+<!--                        <div class="admin-btn">-->
+<!--                          <a href="register">REGISTER</a>-->
+<!--                        </div>-->
+                        <div>
+                            <button id="enter-btn" onclick="location.href='login'">LOGIN</button>
+                            <button id="admin-btn" onclick="location.href='register'">REGISTER</button>
+                        </div>
+                    </main>
+                </div>
+
+            </div>
+        </div>
+    </section>
+    <!--======== end intro =========-->
+
+
+
+
+<!--======== Our Services =========-->
+<section id="log-analysis" class="log-analysis">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2 text-center">
+                <h1 class="section-title">Log Analysis</h1>
+                <p class="section-para">Gain insights into system health and performance with our log analysis services.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="lnr lnr-chart-bars"></i>
+                            </div>
+                            <div class="media-body">
+                                <h3 class="media-heading">Performance Metrics</h3>
+                                <p>Optimize system efficiency and resource utilization with performance metric monitoring.</p>
+                            </div>
+                        </div>
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="lnr lnr-file-empty"></i>
+                            </div>
+                            <div class="media-body">
+                                <h3 class="media-heading">Log Parsing</h3>
+                                <p>Analyze log data in real-time to identify trends, anomalies, and potential issues.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="lnr lnr-database"></i>
+                            </div>
+                            <div class="media-body">
+                                <h3 class="media-heading">Data Storage</h3>
+                                <p>Securely store and manage log files to ensure data integrity and accessibility.</p>
+                            </div>
+                        </div>
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="lnr lnr-magnifier"></i>
+                            </div>
+                            <div class="media-body">
+                                <h3 class="media-heading">Search & Filtering</h3>
+                                <p>Quickly search and filter logs to pinpoint specific events or patterns.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="lnr lnr-sync"></i>
+                            </div>
+                            <div class="media-body">
+                                <h3 class="media-heading">Real-time Monitoring</h3>
+                                <p>Monitor logs in real-time for immediate detection and response to critical events.</p>
+                            </div>
+                        </div>
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="lnr lnr-cog"></i>
+                            </div>
+                            <div class="media-body">
+                                <h3 class="media-heading">Custom Configuration</h3>
+                                <p>Customize log analysis settings and alerts to meet your operational needs.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="lnr lnr-history"></i>
+                            </div>
+                            <div class="media-body">
+                                <h3 class="media-heading">Historical Insights</h3>
+                                <p>Gather historical insights into system performance and trends for informed decision-making.</p>
+                            </div>
+                        </div>
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="lnr lnr-rocket"></i>
+                            </div>
+                            <div class="media-body">
+                                <h3 class="media-heading">Performance Optimization</h3>
+                                <p>Identify optimization opportunities to enhance system performance based on log analysis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!--======== end Our Services =========-->
+
+
+    <!--======== All Javascript =========-->
+<!--    <script src="js/jquery-2.1.1.js"></script>-->
+<!--    <script src="js/bootstrap.min.js"></script>-->
+<!--    <script src="bootstrap/js/bootstrap.min.js"></script>-->
+<!--    <script src="js/owl.carousel.min.js"></script>-->
+<!--    <script src="js/custom.js"></script>-->
+</body>
+
+</html>
