@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import pandas as pd
 import pymysql
+from sqlalchemy import create_engine
 
 app = Flask(__name__)
 
@@ -208,6 +209,10 @@ def log_analysis():
 def event_frequency():
     return render_template('event_frequency.html')
 
+@app.route('/time_series')
+def time_series():
+    return render_template('time_series.html')
+
 @app.route('/manage_operators/view', methods=['GET'])
 def view_operators():
     try:
@@ -312,6 +317,46 @@ def delete_operator():
     except pymysql.MySQLError as e:
         return render_template('admin_mainpage', error=f'数据库错误：{e}')
 
+@app.route('/api/event_frequency', methods=['GET'])
+def get_event_frequency():
+    try:
+        query = """
+        SELECT EventId, COUNT(*) as Frequency
+        FROM hdfs_structured
+        WHERE EventId IS NOT NULL
+        GROUP BY EventId
+        ORDER BY Frequency DESC
+        """
+        df = pd.read_sql(query, engine)
+
+        event_frequency_data = df.to_dict(orient='records')
+        return jsonify(event_frequency_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# 创建数据库连接字符串
+db_url = f"mysql+pymysql://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
+
+# 创建SQLAlchemy引擎
+engine = create_engine(db_url)
+
+@app.route('/api/logs_by_event/<event_id>', methods=['GET'])
+def get_logs_by_event(event_id):
+    try:
+        query = """
+        SELECT LineId, Date, Time, Pid, Level, Component, Content, EventId, EventTemplate
+        FROM hdfs_structured
+        WHERE EventId = %(event_id)s
+        """
+        df = pd.read_sql(query, engine, params={"event_id": event_id})
+
+        # Convert Timedelta to string
+        df['Time'] = df['Time'].astype(str)
+
+        logs_data = df.to_dict(orient='records')
+        return jsonify(logs_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
