@@ -221,6 +221,37 @@ def view_operators():
         return render_template('view_operators.html', operators=operators)
     except pymysql.MySQLError as e:
         return render_template('admin_mainpage', error=f'数据库错误：{e}')
+    
+@app.route('/manage_operators/edit', methods=['GET', 'POST'])
+def edit_operator():
+    if request.method == 'POST':
+        operator_id = request.form['operator_id']
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        try:
+            connection = pymysql.connect(**db_config)
+            cursor = connection.cursor()
+            sql = "UPDATE operator SET username = %s, email = %s, password = %s WHERE id = %s"
+            cursor.execute(sql, (username, email, password, operator_id))
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return redirect(url_for('view_operators'))
+        except pymysql.MySQLError as e:
+            return render_template('edit_operator.html', error=f'数据库错误：{e}')
+    try:
+        connection = pymysql.connect(**db_config)
+        cursor = connection.cursor()
+        sql = "SELECT id, username, email FROM operator"
+        cursor.execute(sql)
+        operators = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return render_template('edit_operator.html', operators=operators)
+    except pymysql.MySQLError as e:
+        return render_template('admin_mainpage', error=f'数据库错误：{e}')
+
 
 @app.route('/manage_operators/add', methods=['GET', 'POST'])
 def add_operator():
