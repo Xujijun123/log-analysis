@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 import pandas as pd
 import pymysql
 from sqlalchemy import create_engine
-
 app = Flask(__name__)
 
 # 数据库连接配置
@@ -14,8 +13,6 @@ db_config = {
     'port': 3306,
     'ssl': {'ssl': {}}
 }
-
-
 
 
 @app.route('/search_logs', methods=['GET'])
@@ -358,6 +355,58 @@ def get_logs_by_event(event_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/time_series_data', methods=['GET'])
+def get_time_series_data():
+    try:
+        print("Starting to fetch time series data...")  # 调试输出
+        query = """
+        SELECT DATE(Date) as date, COUNT(*) as count
+        FROM hdfs_structured
+        GROUP BY DATE(Date)
+        ORDER BY DATE(Date)
+        """
+        df = pd.read_sql(query, engine)
+
+        # 将日期和计数转换为字典列表，并将日期转换为字符串
+        time_series_data = df.to_dict(orient='records')
+        for entry in time_series_data:
+            entry['date'] = entry['date'].strftime('%Y-%m-%d')
+
+        return jsonify(time_series_data)
+    except Exception as e:
+        print(f"Error fetching time series data: {e}")  # 错误输出
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/logs_by_date/<date>', methods=['GET'])
+def get_logs_by_date(date):
+    try:
+        print(f"Fetching logs for date: {date}")
+        query = """
+        SELECT HOUR(Time) as hour, COUNT(*) as count
+        FROM hdfs_structured
+        WHERE DATE(Date) = %(date)s
+        GROUP BY HOUR(Time)
+        ORDER BY HOUR(Time)
+        """
+        df = pd.read_sql(query, engine, params={'date': date})
+
+        # 输出查询结果
+        print("Query result:")
+        print(df)
+
+        # 将小时和计数转换为字典列表，并将小时转换为字符串
+        logs_by_date = df.to_dict(orient='records')
+        for entry in logs_by_date:
+            entry['hour'] = f"{entry['hour']:02}:00"
+
+        # 输出转换后的数据
+        print("Logs by date data:")
+        print(logs_by_date)
+
+        return jsonify(logs_by_date)
+    except Exception as e:
+        print(f"Error fetching logs for date {date}: {e}")  # 错误输出
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
