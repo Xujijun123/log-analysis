@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import pandas as pd
 import pymysql
+from sqlalchemy import create_engine
 
 app = Flask(__name__)
 
@@ -198,6 +199,20 @@ def view_logs():
     total_pages = (total + per_page - 1) // per_page
     return render_template('logs.html', logs=logs_df.to_html(classes='log-table', index=False), page=page,
                            total_pages=total_pages, log_type=log_type)
+
+
+@app.route('/log_analysis')
+def log_analysis():
+    return render_template('log_analysis.html')
+
+@app.route('/event_frequency')
+def event_frequency():
+    return render_template('event_frequency.html')
+
+@app.route('/time_series')
+def time_series():
+    return render_template('time_series.html')
+
 @app.route('/manage_operators/view', methods=['GET'])
 def view_operators():
     try:
@@ -211,6 +226,37 @@ def view_operators():
         return render_template('view_operators.html', operators=operators)
     except pymysql.MySQLError as e:
         return render_template('admin_mainpage', error=f'数据库错误：{e}')
+    
+@app.route('/manage_operators/edit', methods=['GET', 'POST'])
+def edit_operator():
+    if request.method == 'POST':
+        operator_id = request.form['operator_id']
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        try:
+            connection = pymysql.connect(**db_config)
+            cursor = connection.cursor()
+            sql = "UPDATE operator SET username = %s, email = %s, password = %s WHERE id = %s"
+            cursor.execute(sql, (username, email, password, operator_id))
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return redirect(url_for('view_operators'))
+        except pymysql.MySQLError as e:
+            return render_template('edit_operator.html', error=f'数据库错误：{e}')
+    try:
+        connection = pymysql.connect(**db_config)
+        cursor = connection.cursor()
+        sql = "SELECT id, username, email FROM operator"
+        cursor.execute(sql)
+        operators = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return render_template('edit_operator.html', operators=operators)
+    except pymysql.MySQLError as e:
+        return render_template('admin_mainpage', error=f'数据库错误：{e}')
+
 
 @app.route('/manage_operators/add', methods=['GET', 'POST'])
 def add_operator():
@@ -270,6 +316,47 @@ def delete_operator():
         return render_template('delete_operator.html', operators=operators)
     except pymysql.MySQLError as e:
         return render_template('admin_mainpage', error=f'数据库错误：{e}')
+
+@app.route('/api/event_frequency', methods=['GET'])
+def get_event_frequency():
+    try:
+        query = """
+        SELECT EventId, COUNT(*) as Frequency
+        FROM hdfs_structured
+        WHERE EventId IS NOT NULL
+        GROUP BY EventId
+        ORDER BY Frequency DESC
+        """
+        df = pd.read_sql(query, engine)
+
+        event_frequency_data = df.to_dict(orient='records')
+        return jsonify(event_frequency_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# 创建数据库连接字符串
+db_url = f"mysql+pymysql://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
+
+# 创建SQLAlchemy引擎
+engine = create_engine(db_url)
+
+@app.route('/api/logs_by_event/<event_id>', methods=['GET'])
+def get_logs_by_event(event_id):
+    try:
+        query = """
+        SELECT LineId, Date, Time, Pid, Level, Component, Content, EventId, EventTemplate
+        FROM hdfs_structured
+        WHERE EventId = %(event_id)s
+        """
+        df = pd.read_sql(query, engine, params={"event_id": event_id})
+
+        # Convert Timedelta to string
+        df['Time'] = df['Time'].astype(str)
+
+        logs_data = df.to_dict(orient='records')
+        return jsonify(logs_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

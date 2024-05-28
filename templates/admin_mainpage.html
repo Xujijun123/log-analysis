@@ -87,7 +87,32 @@
             width: 150px;
             text-align: center;
         }
+        .operator-management {
+            list-style-type: none;
+            padding: 0;
+            display: none;
+        }
+        .operator-management li a {
+            font-size: 14px; 
+            color: #ccc;
+            text-decoration: none;
+            display: block;
+            padding: 2px 0; /* 内边距 */
+        }
+        .operator-management li a:hover {
+            color: #fff;
+        }
     </style>
+    <script>
+        function toggleOperatorManagement() {
+            var operatorManagement = document.getElementById('operator-management');
+            if (operatorManagement.style.display === 'none' || operatorManagement.style.display === '') {
+                operatorManagement.style.display = 'block';
+            } else {
+                operatorManagement.style.display = 'none';
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="sidebar">
@@ -100,6 +125,13 @@
                 <li><a href="#">Settings</a></li>
                 <li><a href="#">Logout</a></li>
                 <li><a href="/logs">日志查看</a></li>
+                <li><a href="javascript:void(0)" onclick="toggleOperatorManagement()">人员管理</a></li>
+                <ul id="operator-management" class="operator-management">
+                    <li><a href="/manage_operators/view">查看运维人员</a></li>
+                    <li><a href="/manage_operators/edit">修改运维人员</a></li>
+                    <li><a href="/manage_operators/add">添加运维人员</a></li>
+                    <li><a href="/manage_operators/delete">删除运维人员</a></li>
+                </ul>
             </ul>
         </nav>
     </div>
@@ -128,14 +160,6 @@
                     <h4>24</h4>
                     <p>Projects</p>
                 </div>
-            </div>
-            <div class="card">
-                <h3>人员管理</h3>
-                <ul>
-                    <li><a href="/manage_operators/view">查看运维人员</a></li>
-                    <li><a href="/manage_operators/add">添加运维人员</a></li>
-                    <li><a href="/manage_operators/delete">删除运维人员</a></li>
-                </ul>
             </div>
         </div>
         <div class="card">

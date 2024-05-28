@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #333;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar img {
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto;
+            width: 80px;
+        }
+        .sidebar h2 {
+            text-align: center;
+            margin: 10px 0;
+        }
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        .sidebar nav ul li {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .sidebar nav ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar nav ul li a:hover {
+            color: #ddd;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .card {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        .pagination ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .pagination li {
+            margin: 0 10px;
+        }
+        .pagination li a, .pagination li span {
+            text-decoration: none;
+            padding: 5px 10px;
+            color: #007bff;
+        }
+        .pagination li.active span, .pagination li.disabled span {
+            color: #6c757d;
+        }
+        .pagination li a:hover {
+            text-decoration: underline;
+        }
+        .log-buttons {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+        }
+        .log-buttons button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .log-table {
+            width: auto;
+            margin-top: 20px;
+            overflow-x: auto;
+            white-space: normal; /* 允许文本自动换行 */
+        }
+
+        .log-table th, .log-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            word-wrap: break-word; /* 在单词边界处换行 */
+            white-space: normal; /* 允许文本自动换行 */
+        }
+
+        .log-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <img src="{{ url_for('static', filename='images/operator.png') }}" alt="User Avatar">
+        <h2>Username</h2>
+        <nav>
+            <ul>
+                <li><a href="/operator_mainpage">Home</a></li>
+                <li><a href="/logs">日志查看</a></li>
+                <li><a href="/search_logs">日志检索</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="content">
+        <h1>日志统计与分析</h1>
+        
+        <div class="log-buttons">
+            <button onclick="location.href='/event_frequency'">事件频率分析</button>
+            <button onclick="location.href='/time_series'">时间序列分析</button>
+            <button onclick="location.href='/component_analysis'">组件分析</button>
+        </div>
+
+    </div>
+</body>
+</html>
