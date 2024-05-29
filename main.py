@@ -8,7 +8,7 @@ app = Flask(__name__)
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '0210070029Xu',
+    'password': '',
     'database': 'logdatabase',
     'port': 3306,
     'ssl': {'ssl': {}}
