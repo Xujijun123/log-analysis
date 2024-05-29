@@ -142,17 +142,26 @@
         <nav>
             <ul>
                 <li><a href="/operator_mainpage">Home</a></li>
+                <li><a href="/log_analysis">Back</a></li>
                 <li><a href="/logs">日志查看</a></li>
                 <li><a href="/search_logs">日志检索</a></li>
-                <li><a href="/event_frequency">事件频率分析</a></li>
-                <li><a href="/time_series">时间序列分析</a></li>
-                <li><a href="/component_analysis">组件分析</a></li>
+                <li><a href="/log_analysis">日志统计与分析</a></li>
+                <li><a href="/">Logout</a></li>
             </ul>
         </nav>
     </div>
     <div class="content">
         <h1>事件频率分析</h1>
         
+        <!-- 添加日志来源选择下拉框 -->
+        <div class="log-source">
+            <label for="logSourceSelect">选择日志来源:</label>
+            <select id="logSourceSelect" onchange="setLogSource()">
+                <option value="hdfs">HDFS 日志</option>
+                <!-- 可以添加其他日志来源选项 -->
+            </select>
+        </div>
+
         <div class="card">
             <h2>事件频率表</h2>
             <div class="log-table">
@@ -212,144 +221,142 @@
     </div>
 
     <script>
-        // 从后端获取事件频率数据
-        fetch('/api/event_frequency')
-            .then(response => response.json())
-            .then(data => {
-                // 渲染表格
-                const frequencyTable = document.getElementById('frequencyTable');
-                data.forEach(event => {
-                    const row = document.createElement('tr');
-                    const eventIdCell = document.createElement('td');
-                    eventIdCell.textContent = event.EventId;
-                    const frequencyCell = document.createElement('td');
-                    frequencyCell.textContent = event.Frequency;
-                    const buttonCell = document.createElement('td');
-                    const button = document.createElement('button');
-                    button.textContent = '查看日志';
-                    button.addEventListener('click', () => {
-                        console.log(`查看日志按钮被点击，EventId: ${event.EventId}`);
-                        fetchLogsByEventId(event.EventId);
+        let logSource = 'hdfs';  // 默认值
+
+        function setLogSource() {
+            const selectElement = document.getElementById('logSourceSelect');
+            logSource = selectElement.value;
+            fetchEventFrequencyData();
+        }
+
+        function fetchEventFrequencyData() {
+            fetch(`/api/event_frequency?log_source=${logSource}`)
+                .then(response => response.json())
+                .then(data => {
+                    // 渲染表格
+                    const frequencyTable = document.getElementById('frequencyTable');
+                    frequencyTable.innerHTML = '';  // 清空表格内容
+                    data.forEach(event => {
+                        const row = document.createElement('tr');
+                        const eventIdCell = document.createElement('td');
+                        eventIdCell.textContent = event.EventId;
+                        const frequencyCell = document.createElement('td');
+                        frequencyCell.textContent = event.Frequency;
+                        const buttonCell = document.createElement('td');
+                        const button = document.createElement('button');
+                        button.textContent = '查看日志';
+                        button.addEventListener('click', () => {
+                            fetchLogsByEventId(event.EventId);
+                        });
+                        buttonCell.appendChild(button);
+                        row.appendChild(eventIdCell);
+                        row.appendChild(frequencyCell);
+                        row.appendChild(buttonCell);
+                        frequencyTable.appendChild(row);
                     });
-                    buttonCell.appendChild(button);
-                    row.appendChild(eventIdCell);
-                    row.appendChild(frequencyCell);
-                    row.appendChild(buttonCell);
-                    frequencyTable.appendChild(row);
-                });
 
-                // 渲染柱状图
-                const ctx = document.getElementById('frequencyChart').getContext('2d');
-                const labels = data.map(event => event.EventId);
-                const chartData = data.map(event => event.Frequency);
-                const frequencyChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: '事件频率',
-                            data: chartData,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
+                    // 渲染柱状图
+                    const ctx = document.getElementById('frequencyChart').getContext('2d');
+                    const labels = data.map(event => event.EventId);
+                    const chartData = data.map(event => event.Frequency);
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: '事件频率',
+                                data: chartData,
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
                         },
-                        onClick: (event, elements) => {
-                            if (elements.length > 0) {
-                                const index = elements[0].index;
-                                const eventId = labels[index];
-                                console.log(`图表列被点击，EventId: ${eventId}`);
-                                fetchLogsByEventId(eventId);
-                            }
-                        }
-                    }
-                });
-
-                // 渲染饼状图
-                const pieCtx = document.getElementById('pieChart').getContext('2d');
-                const pieChart = new Chart(pieCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: '事件频率',
-                            data: chartData,
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(75, 192, 192, 0.2)',
-                                'rgba(153, 102, 255, 0.2)',
-                                'rgba(255, 159, 64, 0.2)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'top',
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
                             },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(tooltipItem) {
-                                        return `${tooltipItem.label}: ${tooltipItem.raw}`;
-                                    }
+                            onClick: (event, elements) => {
+                                if (elements.length > 0) {
+                                    const index = elements[0].index;
+                                    const eventId = labels[index];
+                                    fetchLogsByEventId(eventId);
                                 }
                             }
+                        }
+                    });
+
+                    // 渲染饼状图
+                    const pieCtx = document.getElementById('pieChart').getContext('2d');
+                    new Chart(pieCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: '事件频率',
+                                data: chartData,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)',
+                                    'rgba(255, 159, 64, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)',
+                                    'rgba(255, 159, 64, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
                         },
-                        onClick: (event, elements) => {
-                            if (elements.length > 0) {
-                                const index = elements[0].index;
-                                const eventId = labels[index];
-                                console.log(`图表列被点击，EventId: ${eventId}`);
-                                fetchLogsByEventId(eventId);
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(tooltipItem) {
+                                            return `${tooltipItem.label}: ${tooltipItem.raw}`;
+                                        }
+                                    }
+                                }
+                            },
+                            onClick: (event, elements) => {
+                                if (elements.length > 0) {
+                                    const index = elements[0].index;
+                                    const eventId = labels[index];
+                                    fetchLogsByEventId(eventId);
+                                }
                             }
                         }
-                    }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching event frequency data:', error);
                 });
-            })
-            .catch(error => {
-                console.error('Error fetching event frequency data:', error);
-            });
+        }
 
         function formatTime(timeString) {
             // timeString 示例: "0 days 09:03:15"
             const timeParts = timeString.match(/(\d+ days )?(\d{2}:\d{2}:\d{2})/);
             if (timeParts) {
-                return timeParts[2]; // 返回 HH:MM:SS 部分
+                return timeParts[2]; // Back HH:MM:SS 部分
             }
-            return timeString; // 如果解析失败，返回原字符串
+            return timeString; // 如果解析失败，Back原字符串
         }
 
         function fetchLogsByEventId(eventId) {
-            console.log(`Fetching logs for EventId: ${eventId}`);
-            fetch(`/api/logs_by_event/${eventId}`)
-                .then(response => {
-                    console.log(`Response status: ${response.status}`);
-                    return response.json();
-                })
+            fetch(`/api/logs_by_event/${eventId}?log_source=${logSource}`)
+                .then(response => response.json())
                 .then(data => {
-                    console.log(`Received data for EventId: ${eventId}`, data);
-                    if (!Array.isArray(data)) {
-                        console.error('Data is not an array:', data);
-                        return;
-                    }
                     const logDetailsTable = document.getElementById('logDetailsTable');
                     logDetailsTable.innerHTML = ''; // 清空表格
 
@@ -398,6 +405,9 @@
                     console.error('Error fetching logs by event:', error);
                 });
         }
+
+        // 初始加载数据
+        fetchEventFrequencyData();
     </script>
 </body>
 </html>

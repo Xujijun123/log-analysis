@@ -210,6 +210,14 @@ def event_frequency():
 def time_series():
     return render_template('time_series.html')
 
+@app.route("/level_time")
+def level_time():
+    return render_template("level_time.html")
+
+@app.route("/event_time")
+def event_time():
+    return render_template("event_time.html")
+
 @app.route('/manage_operators/view', methods=['GET'])
 def view_operators():
     try:
@@ -314,22 +322,27 @@ def delete_operator():
     except pymysql.MySQLError as e:
         return render_template('admin_mainpage', error=f'数据库错误：{e}')
 
-@app.route('/api/event_frequency', methods=['GET'])
+
+
+@app.route("/api/event_frequency", methods=["GET"])
 def get_event_frequency():
+    log_source = request.args.get("log_source", "hdfs")
+    table_name = f"{log_source}_structured"
     try:
-        query = """
+        query = f"""
         SELECT EventId, COUNT(*) as Frequency
-        FROM hdfs_structured
+        FROM {table_name}
         WHERE EventId IS NOT NULL
         GROUP BY EventId
         ORDER BY Frequency DESC
         """
         df = pd.read_sql(query, engine)
 
-        event_frequency_data = df.to_dict(orient='records')
+        event_frequency_data = df.to_dict(orient="records")
         return jsonify(event_frequency_data)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
+
 
 # 创建数据库连接字符串
 db_url = f"mysql+pymysql://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
@@ -337,76 +350,150 @@ db_url = f"mysql+pymysql://{db_config['user']}:{db_config['password']}@{db_confi
 # 创建SQLAlchemy引擎
 engine = create_engine(db_url)
 
-@app.route('/api/logs_by_event/<event_id>', methods=['GET'])
+
+@app.route("/api/logs_by_event/<event_id>", methods=["GET"])
 def get_logs_by_event(event_id):
+    log_source = request.args.get("log_source", "hdfs")
+    table_name = f"{log_source}_structured"
     try:
-        query = """
+        query = f"""
         SELECT LineId, Date, Time, Pid, Level, Component, Content, EventId, EventTemplate
-        FROM hdfs_structured
+        FROM {table_name}
         WHERE EventId = %(event_id)s
         """
         df = pd.read_sql(query, engine, params={"event_id": event_id})
 
         # Convert Timedelta to string
-        df['Time'] = df['Time'].astype(str)
+        df["Time"] = df["Time"].astype(str)
 
-        logs_data = df.to_dict(orient='records')
+        logs_data = df.to_dict(orient="records")
         return jsonify(logs_data)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/time_series_data', methods=['GET'])
+
+@app.route("/api/time_series_data", methods=["GET"])
 def get_time_series_data():
+    log_source = request.args.get("log_source", "hdfs")
+    table_name = f"{log_source}_structured"
     try:
-        print("Starting to fetch time series data...")  # 调试输出
-        query = """
+        query = f"""
         SELECT DATE(Date) as date, COUNT(*) as count
-        FROM hdfs_structured
+        FROM {table_name}
         GROUP BY DATE(Date)
         ORDER BY DATE(Date)
         """
+
         df = pd.read_sql(query, engine)
 
-        # 将日期和计数转换为字典列表，并将日期转换为字符串
-        time_series_data = df.to_dict(orient='records')
+        time_series_data = df.to_dict(orient="records")
         for entry in time_series_data:
-            entry['date'] = entry['date'].strftime('%Y-%m-%d')
+            entry["date"] = entry["date"].strftime("%Y-%m-%d")
 
         return jsonify(time_series_data)
     except Exception as e:
-        print(f"Error fetching time series data: {e}")  # 错误输出
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/logs_by_date/<date>', methods=['GET'])
+
+@app.route("/api/logs_by_date/<date>", methods=["GET"])
 def get_logs_by_date(date):
+    log_source = request.args.get("log_source", "hdfs")
+    table_name = f"{log_source}_structured"
     try:
-        print(f"Fetching logs for date: {date}")
-        query = """
+        query = f"""
         SELECT HOUR(Time) as hour, COUNT(*) as count
-        FROM hdfs_structured
+        FROM {table_name}
         WHERE DATE(Date) = %(date)s
         GROUP BY HOUR(Time)
         ORDER BY HOUR(Time)
         """
-        df = pd.read_sql(query, engine, params={'date': date})
+        df = pd.read_sql(query, engine, params={"date": date})
 
-        # 输出查询结果
-        print("Query result:")
-        print(df)
-
-        # 将小时和计数转换为字典列表，并将小时转换为字符串
-        logs_by_date = df.to_dict(orient='records')
+        logs_by_date = df.to_dict(orient="records")
         for entry in logs_by_date:
-            entry['hour'] = f"{entry['hour']:02}:00"
-
-        # 输出转换后的数据
-        print("Logs by date data:")
-        print(logs_by_date)
+            entry["hour"] = f"{entry['hour']:02}:00"
 
         return jsonify(logs_by_date)
     except Exception as e:
-        print(f"Error fetching logs for date {date}: {e}")  # 错误输出
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
+@app.route("/api/time_series_by_event", methods=["GET"])
+def get_time_series_by_event():
+    log_source = request.args.get("log_source", "hdfs")
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    table_name = f"{log_source}_structured"
+    print(f"Received request for time series data by event from log source: {log_source}, between {start_date} and {end_date}")
+    
+    try:
+        query = f"""
+        SELECT EventId, Date, COUNT(*) as value
+        FROM {table_name}
+        WHERE Date BETWEEN %(start_date)s AND %(end_date)s
+        GROUP BY EventId, Date
+        ORDER BY EventId, Date
+        """
+        print(f"Executing query: {query}")
+        df = pd.read_sql(query, engine, params={"start_date": start_date, "end_date": end_date})
+        print(f"Query executed successfully, retrieved {len(df)} records")
+
+        # 打印查询结果
+        print(df.head())
+
+        event_groups = df.groupby('EventId')
+        result = []
+        for event_id, group in event_groups:
+            event_data = {
+                "event_id": event_id,
+                "data": group[['Date', 'value']].rename(columns={'Date': 'timestamp'}).to_dict(orient='records')
+            }
+            result.append(event_data)
+        
+        print("Successfully processed event data for response")
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error while processing request: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/time_series_by_level", methods=["GET"])
+def get_time_series_by_level():
+    log_source = request.args.get("log_source", "hdfs")
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    table_name = f"{log_source}_structured"
+    print(f"Received request for time series data by event from log source: {log_source}, between {start_date} and {end_date}")
+    
+    try:
+        query = f"""
+        SELECT Level, Date, COUNT(*) as value
+        FROM {table_name}
+        WHERE Date BETWEEN %(start_date)s AND %(end_date)s
+        GROUP BY Level, Date
+        ORDER BY Level, Date
+        """
+        print(f"Executing query: {query}")
+        df = pd.read_sql(query, engine, params={"start_date": start_date, "end_date": end_date})
+        print(f"Query executed successfully, retrieved {len(df)} records")
+
+        # 打印查询结果
+        print(df.head())
+
+        event_groups = df.groupby('Level')
+        result = []
+        for level, group in event_groups:
+            event_data = {
+                "level": level,
+                "data": group[['Date', 'value']].rename(columns={'Date': 'timestamp'}).to_dict(orient='records')
+            }
+            result.append(event_data)
+        
+        print("Successfully processed event data for response")
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error while processing request: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+    
+if __name__ == "__main__":
     app.run(debug=True)
