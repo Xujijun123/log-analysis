@@ -141,18 +141,31 @@
         <h2>Username</h2>
         <nav>
             <ul>
-                <li><a href="/">Home</a></li>
+                <li><a href="/operator_mainpage">Home</a></li>
+                <li><a href="/log_analysis">Back</a></li>
                 <li><a href="/logs">日志查看</a></li>
                 <li><a href="/search_logs">日志检索</a></li>
-                <li><a href="/event_frequency">事件频率分析</a></li>
-                <li><a href="/time_series">时间序列分析</a></li>
-                <li><a href="/component_analysis">组件分析</a></li>
+                <li><a href="/log_analysis">日志统计与分析</a></li>
+                <li><a href="/">Logout</a></li>
             </ul>
         </nav>
     </div>
     <div class="content">
         <h1>时间序列分析</h1>
         
+        <div class="log-buttons">
+            <button onclick="location.href='/event_time'">事件时间序列分析</button>
+            <button onclick="location.href='/level_time'">级别时间序列分析</button>
+        </div>
+
+        <!-- 添加日志来源选择按钮 -->
+        <div class="log-source">
+            <label for="logSourceSelect">选择日志来源:</label>
+            <select id="logSourceSelect" onchange="setLogSource()">
+                <option value="hdfs">HDFS 日志</option>
+                <!-- 可以添加其他日志来源选项 -->
+            </select>
+        </div>
         <div class="card">
             <h2>日志时间序列图表</h2>
             <div id="chartContainer">
@@ -168,6 +181,7 @@
                         <tr>
                             <th>Date</th>
                             <th>Count</th>
+                            <th>操作</th>
                         </tr>
                     </thead>
                     <tbody id="timeSeriesTable">
@@ -186,130 +200,135 @@
     </div>
 
     <script>
+        let logSource = 'hdfs';
+
+        function setLogSource(source) {
+            logSource = source;
+            fetchData();
+        }
+
+        function fetchData() {
+            fetch(`/api/time_series_data?log_source=${logSource}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+                    const labels = data.map(entry => entry.date);
+                    const values = data.map(entry => entry.count);
+
+                    const timeSeriesChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: '日志数量',
+                                data: values,
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'day'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+
+                    const timeSeriesTable = document.getElementById('timeSeriesTable');
+                    timeSeriesTable.innerHTML = ''; // 清空表格内容
+                    data.forEach(entry => {
+                        const row = document.createElement('tr');
+                        const dateCell = document.createElement('td');
+                        dateCell.textContent = formatDate(entry.date);
+                        dateCell.style.cursor = 'pointer';
+                        const countCell = document.createElement('td');
+                        countCell.textContent = entry.count;
+                        const buttonCell = document.createElement('td');
+                        const button = document.createElement('button');
+                        button.textContent = '当日日志时间序列分析';
+                        button.addEventListener('click', () => {
+                            fetchLogsByDate(entry.date);
+                        });
+                        buttonCell.appendChild(button);
+                        row.appendChild(dateCell);
+                        row.appendChild(countCell);
+                        row.appendChild(buttonCell);
+                        timeSeriesTable.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching time series data:', error);
+                });
+        }
+
+        function fetchLogsByDate(date) {
+            fetch(`/api/logs_by_date/${date}?log_source=${logSource}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('detailChart').getContext('2d');
+                    const labels = data.map(entry => `1970-01-01T${entry.hour}:00`);
+                    const values = data.map(entry => entry.count);
+
+                    if (window.detailChart && typeof window.detailChart.destroy === 'function') {
+                        window.detailChart.destroy();
+                    }
+
+                    window.detailChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: `日志数量 - ${formatDate(date)}`,
+                                data: values,
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1,
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'hour',
+                                        tooltipFormat: 'HH:mm',
+                                        displayFormats: {
+                                            hour: 'HH:mm'
+                                        }
+                                    },
+                                    min: '1970-01-01T00:00:00',
+                                    max: '1970-01-01T23:59:59'
+                                },
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+
+                    document.getElementById('detailCard').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error(`Error fetching logs by date ${date}:`, error);
+                });
+        }
+
         function formatDate(dateString) {
             const options = { year: 'numeric', month: 'short', day: 'numeric' };
             return new Date(dateString).toLocaleDateString(undefined, options);
         }
 
-        // 从后端获取时间序列数据
-        fetch('/api/time_series_data')
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('timeSeriesChart').getContext('2d');
-                const labels = data.map(entry => entry.date);
-                const values = data.map(entry => entry.count);
-
-                const timeSeriesChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: '日志数量',
-                            data: values,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'day'
-                                }
-                            },
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-
-                // 渲染表格
-                const timeSeriesTable = document.getElementById('timeSeriesTable');
-                data.forEach(entry => {
-                    const row = document.createElement('tr');
-                    const dateCell = document.createElement('td');
-                    dateCell.textContent = formatDate(entry.date);
-                    dateCell.style.cursor = 'pointer';
-                    dateCell.addEventListener('click', () => {
-                        console.log(`Date clicked: ${entry.date}`);
-                        fetchLogsByDate(entry.date);
-                    });
-                    const countCell = document.createElement('td');
-                    countCell.textContent = entry.count;
-                    row.appendChild(dateCell);
-                    row.appendChild(countCell);
-                    timeSeriesTable.appendChild(row);
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching time series data:', error);
-            });
-
-            function fetchLogsByDate(date) {
-                console.log(`Fetching logs for date: ${date}`); // 验证性输出
-                fetch(`/api/logs_by_date/${date}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(`Logs data for date ${date}:`, data); // 验证性输出
-                        const ctx = document.getElementById('detailChart').getContext('2d');
-                        const labels = data.map(entry => `1970-01-01T${entry.hour}:00`);
-                        const values = data.map(entry => entry.count);
-            
-                        if (window.detailChart && typeof window.detailChart.destroy === 'function') {
-                            window.detailChart.destroy();
-                        }
-            
-                        window.detailChart = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: labels,
-                                datasets: [{
-                                    label: `日志数量 - ${formatDate(date)}`,
-                                    data: values,
-                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                    borderColor: 'rgba(255, 99, 132, 1)',
-                                    borderWidth: 1,
-                                    fill: false
-                                }]
-                            },
-                            options: {
-                                scales: {
-                                    x: {
-                                        type: 'time',
-                                        time: {
-                                            unit: 'hour',
-                                            tooltipFormat: 'HH:mm',
-                                            displayFormats: {
-                                                hour: 'HH:mm'
-                                            }
-                                        },
-                                        min: '1970-01-01T00:00:00',
-                                        max: '1970-01-01T23:59:59'
-                                    },
-                                    y: {
-                                        beginAtZero: true
-                                    }
-                                }
-                            }
-                        });
-                        
-            
-                        document.getElementById('detailCard').style.display = 'block';
-                    })
-                    .catch(error => {
-                        console.error(`Error fetching logs by date ${date}:`, error);
-                    });
-            }
-            
-            function formatDate(dateString) {
-                const options = { year: 'numeric', month: 'short', day: 'numeric' };
-                return new Date(dateString).toLocaleDateString(undefined, options);
-            }
-            
-            
+        // 初始加载数据
+        fetchData();
     </script>
 </body>
 </html>
