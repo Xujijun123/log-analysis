@@ -92,13 +92,11 @@
 <body>
     <div class="sidebar">
         <img src="{{ url_for('static', filename='images/operator.png') }}" alt="User Avatar">
-        <h2>Username</h2>
+        <h2>{{ session['username'] }}</h2>
         <nav>
             <ul>
                 <li><a href="#">Home</a></li>
-                <li><a href="#">Profile</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href="/">Logout</a></li>
+                <li><a href="/">退出账户</a></li>
                 <li><a href="/logs">日志查看</a></li>
                 <li><a href="/search_logs">日志检索</a></li>
                 <li><a href="/log_analysis">日志统计与分析</a></li>

@@ -1,19 +1,28 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 import pandas as pd
 import pymysql
 from sqlalchemy import create_engine
+from functools import wraps
 app = Flask(__name__)
-
+app.secret_key = '123'  # 用于加密session数据
+app.config['SESSION_TYPE'] = 'filesystem'  # 会话类型为文件系统
 # 数据库连接配置
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '',
+    'password': '0210070029Xu',
     'database': 'logdatabase',
     'port': 3306,
     'ssl': {'ssl': {}}
 }
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session:
+            return redirect(url_for('login', error='请先登录'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/search_logs', methods=['GET'])
 def search_logs():
@@ -141,6 +150,7 @@ def login():
             connection.close()
             
             if user:
+                session['username'] = username  # 将用户名存储到session
                 if role == 'operator':
                     return redirect(url_for('operator_mainpage'))
                 else:

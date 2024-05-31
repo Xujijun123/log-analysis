@@ -138,7 +138,7 @@
 <body>
     <div class="sidebar">
         <img src="{{ url_for('static', filename='images/operator.png') }}" alt="User Avatar">
-        <h2>Username</h2>
+        <h2>{{ session['username'] }}</h2>
         <nav>
             <ul>
                 <li><a href="/operator_mainpage">Home</a></li>
