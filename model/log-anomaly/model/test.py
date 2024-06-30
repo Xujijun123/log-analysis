@@ -81,7 +81,7 @@ def main(npy_file_path, csv_file_path):
 
     # 初始化并加载模型
     model = logCNN(num_classes=2)
-    model.load_state_dict(torch.load('best_model.pth'))
+    model.load_state_dict(torch.load('model/log-anomaly/model/best_model.pth'))
     model.to(DEVICE)
 
 

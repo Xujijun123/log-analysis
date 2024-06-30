@@ -1,3 +1,7 @@
+import os
+import subprocess
+
+import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 import pandas as pd
 import pymysql
@@ -6,6 +10,7 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = '123'  # 用于加密session数据
 app.config['SESSION_TYPE'] = 'filesystem'  # 会话类型为文件系统
+app.config['UPLOAD_FOLDER'] = 'uploads/'
 # 数据库连接配置
 db_config = {
     'host': 'localhost',
@@ -211,6 +216,11 @@ def view_logs():
 @app.route('/log_analysis')
 def log_analysis():
     return render_template('log_analysis.html')
+@app.route('/log_warning')
+def log_warning():
+    return render_template('log_warning.html')
+
+
 
 @app.route('/event_frequency')
 def event_frequency():
@@ -220,6 +230,43 @@ def event_frequency():
 def time_series():
     return render_template('time_series.html')
 
+@app.route('/log_anomaly')
+def log_anomaly():
+    return render_template('log_anomaly.html')
+
+@app.route('/upload_log_files', methods=['POST', 'GET'])
+def upload_log_files():
+    if request.method == 'POST':
+        if 'file' not in request.files or 'anomalyfile' not in request.files:
+            return redirect(request.url)
+        log_file = request.files['file']
+        anomaly_file = request.files['anomalyfile']
+
+        if log_file.filename == '' or anomaly_file.filename == '':
+            return redirect(request.url)
+
+        if log_file and anomaly_file:
+            log_path = os.path.join(app.config['UPLOAD_FOLDER'], log_file.filename)
+            anomaly_path = os.path.join(app.config['UPLOAD_FOLDER'], anomaly_file.filename)
+
+            log_file.save(log_path)
+            anomaly_file.save(anomaly_path)
+
+            #subprocess.run(['python', 'model/log-anomaly/parse/test_parser.py', log_path])
+
+            structured_log_path = os.path.join(app.config['UPLOAD_FOLDER'], 'HDFS.log_structured.csv')
+
+            #subprocess.run(['python', 'model/log-anomaly/process/test_processor.py', structured_log_path, anomaly_path])
+
+            npy_file = os.path.join(app.config['UPLOAD_FOLDER'], 'x_test_tf-idf_v5.npy')
+            csv_file = os.path.join(app.config['UPLOAD_FOLDER'], 'y_test_tf-idf_v5.csv')
+            subprocess.run(['python', 'model/log-anomaly/model/test.py', npy_file, csv_file])
+            return render_template('log_anomaly.html')
+
+        return 'Failed to upload files'
+    elif request.method == 'GET':
+        # 处理GET请求的逻辑，比如返回上传表单页面
+        return render_template('log_anomaly.html')
 @app.route("/level_time")
 def level_time():
     return render_template("level_time.html")
@@ -506,4 +553,5 @@ def get_time_series_by_level():
 
     
 if __name__ == "__main__":
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     app.run(debug=True)
