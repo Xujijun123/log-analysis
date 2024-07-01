@@ -144,27 +144,10 @@
             </ul>
         </nav>
     </div>
+
     <div class="content">
-        <h1>日志告警分析</h1>
-
-        <form action="/upload_log_files" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required>
-            <input type="file" name="anomalyfile" required>
-            <button type="submit">上传文件</button>
-        </form>
-         {% if output %}
-            <h2>Processing Result:</h2>
-            <pre>{{ output }}</pre>
-        {% endif %}
-
-        {% if anomalous_log_lines %}
-            <h2>Anomalous Log Lines:</h2>
-            <ul>
-                {% for line in anomalous_log_lines %}
-                    <li>{{ line }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+        <h1>Log Anomaly Analysis Result</h1>
+        <pre>{{ output }}</pre>
     </div>
 </body>
 </html>

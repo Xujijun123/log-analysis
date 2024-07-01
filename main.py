@@ -260,8 +260,19 @@ def upload_log_files():
 
             npy_file = os.path.join(app.config['UPLOAD_FOLDER'], 'x_test_tf-idf_v5.npy')
             csv_file = os.path.join(app.config['UPLOAD_FOLDER'], 'y_test_tf-idf_v5.csv')
-            subprocess.run(['python', 'model/log-anomaly/model/test.py', npy_file, csv_file])
-            return render_template('log_anomaly.html')
+            result=subprocess.run(['python', 'model/log-anomaly/model/test.py', npy_file, csv_file],
+                           capture_output=True,text=True)
+            # 将输出内容传递给模板
+
+            anomalous_lines_path = os.path.join(app.config['UPLOAD_FOLDER'], 'anomalous_lines.csv')
+            if os.path.exists(anomalous_lines_path):
+                anomalous_lines = pd.read_csv(anomalous_lines_path)
+                with open(log_path, 'r') as file:
+                    log_lines = file.readlines()
+                anomalous_log_lines = [log_lines[i] for i in anomalous_lines['LineId']]
+            else:
+                anomalous_log_lines = ["No anomalies detected"]
+            return render_template('log_anomaly.html', output=result.stdout,anomalous_log_lines=anomalous_log_lines)
 
         return 'Failed to upload files'
     elif request.method == 'GET':

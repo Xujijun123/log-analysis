@@ -99,6 +99,7 @@ def main(npy_file_path, csv_file_path):
 
     y_hats = [item for sublist in y_hats for item in sublist]
     y_acts = [item for sublist in y_acts for item in sublist]
+    save_location = os.path.dirname(npy_file_path)
 
     print("TEST SET METRICS:")
     f1 = f1_score(y_acts, y_hats)
@@ -127,6 +128,7 @@ def main(npy_file_path, csv_file_path):
     incorrect_normal = test_normals[test_normals["y_true"] != test_normals["y_pred"]]
     print("number of normals incorrectly identified", len(incorrect_normal))
 
+    #test_anomalous.to_csv('{}/anomalous_lines.csv'.format(save_location), index=True)
     print(test_anomalous)
 
 if __name__ == '__main__':
