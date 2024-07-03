@@ -129,7 +129,7 @@ def main(npy_file_path, csv_file_path):
     print("number of normals incorrectly identified", len(incorrect_normal))
 
     #test_anomalous.to_csv('{}/anomalous_lines.csv'.format(save_location), index=True)
-    print(test_anomalous)
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:

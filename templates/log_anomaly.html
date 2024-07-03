@@ -148,23 +148,43 @@
         <h1>日志告警分析</h1>
 
         <form action="/upload_log_files" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required>
-            <input type="file" name="anomalyfile" required>
+            <label for="file">请上传初始log文件：</label>
+            <input type="file" id="file" name="file" required>
+            <br>
+            <label for="anomalyfile">请上传anomaly_label.csv文件：</label>
+            <input type="file" id="anomalyfile" name="anomalyfile" required>
+            <br>
             <button type="submit">上传文件</button>
         </form>
+
          {% if output %}
             <h2>Processing Result:</h2>
-            <pre>{{ output }}</pre>
+            <table border="1">
+                <tr>
+                    <th>Output</th>
+                </tr>
+                <tr>
+                    <td><pre>{{ output }}</pre></td>
+                </tr>
+            </table>
         {% endif %}
 
-        {% if anomalous_log_lines %}
+        {% if anomalous_log_data %}
             <h2>Anomalous Log Lines:</h2>
-            <ul>
-                {% for line in anomalous_log_lines %}
-                    <li>{{ line }}</li>
+            <table border="1">
+                <tr>
+                    <th>LineId</th>
+                    <th>Anomalous Log Lines</th>
+                </tr>
+                {% for line_id, line in anomalous_log_data %}
+                <tr>
+                    <td>{{ line_id }}</td>
+                    <td>{{ line }}</td>
+                </tr>
                 {% endfor %}
-            </ul>
+            </table>
         {% endif %}
+
     </div>
 </body>
 </html>

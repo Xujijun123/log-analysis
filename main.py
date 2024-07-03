@@ -270,9 +270,12 @@ def upload_log_files():
                 with open(log_path, 'r') as file:
                     log_lines = file.readlines()
                 anomalous_log_lines = [log_lines[i] for i in anomalous_lines['LineId']]
+                anomalous_lines_id = anomalous_lines['LineId'].tolist()
+                # Combine line IDs and log lines into tuples
+                anomalous_log_data = list(zip(anomalous_lines_id, anomalous_log_lines))
             else:
-                anomalous_log_lines = ["No anomalies detected"]
-            return render_template('log_anomaly.html', output=result.stdout,anomalous_log_lines=anomalous_log_lines)
+                anomalous_log_data = [("No anomalies detected", "")]
+            return render_template('log_anomaly.html', output=result.stdout, anomalous_log_data=anomalous_log_data)
 
         return 'Failed to upload files'
     elif request.method == 'GET':
