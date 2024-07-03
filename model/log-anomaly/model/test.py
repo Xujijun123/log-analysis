@@ -128,7 +128,7 @@ def main(npy_file_path, csv_file_path):
     incorrect_normal = test_normals[test_normals["y_true"] != test_normals["y_pred"]]
     print("number of normals incorrectly identified", len(incorrect_normal))
 
-    #test_anomalous.to_csv('{}/anomalous_lines.csv'.format(save_location), index=True)
+    test_anomalous.to_csv('{}/anomalous_lines.csv'.format(save_location), index=True)
 
 
 if __name__ == '__main__':

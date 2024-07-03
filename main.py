@@ -252,11 +252,11 @@ def upload_log_files():
             log_file.save(log_path)
             anomaly_file.save(anomaly_path)
 
-            #subprocess.run(['python', 'model/log-anomaly/parse/test_parser.py', log_path])
+            subprocess.run(['python', 'model/log-anomaly/parse/test_parser.py', log_path])
 
             structured_log_path = os.path.join(app.config['UPLOAD_FOLDER'], 'HDFS.log_structured.csv')
 
-            #subprocess.run(['python', 'model/log-anomaly/process/test_processor.py', structured_log_path, anomaly_path])
+            subprocess.run(['python', 'model/log-anomaly/process/test_processor.py', structured_log_path, anomaly_path])
 
             npy_file = os.path.join(app.config['UPLOAD_FOLDER'], 'x_test_tf-idf_v5.npy')
             csv_file = os.path.join(app.config['UPLOAD_FOLDER'], 'y_test_tf-idf_v5.csv')
