@@ -15,9 +15,9 @@ app.config['UPLOAD_FOLDER'] = 'uploads/'
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'root',
+    'password': 'abc123',
     'database': 'logdatabase',
-    'port': 3306,
+    'port': 3316,
     'ssl': {'ssl': {}}
 }
 
@@ -379,6 +379,35 @@ def upload_log_files():
     elif request.method == 'GET':
         # 处理GET请求的逻辑，比如返回上传表单页面
         return render_template('log_anomaly.html')
+    
+@app.route('/spike_log')
+def spike_log():
+    return render_template('spike_log.html')
+
+    
+@app.route('/upload_log_files1', methods=['POST', 'GET'])
+def upload_log_files1():
+    # Execute the specified command
+    # spike_log_dir = os.path.join(os.getcwd(), 'model', 'SpikeLog')
+    # print(f"Changing to directory: {spike_log_dir}")  # Debug information
+
+    result = subprocess.run(
+        [
+            'python', '-u', 'model/SpikeLog/main_run.py', '--folder=bgl/', '--log_file=BGL_2k.log',
+            '--dataset_name=bgl', '--model_name=prolog', '--window_type=sliding',
+            '--semantics', '--input_size=1', '--embedding_dim=300', '--data_dir=./dataset/',
+            '--sample=sliding_window', '--is_logkey', '--train_size=0.7', '--train_ratio=1',
+            '--valid_ratio=0.1', '--test_ratio=1', '--max_epoch=10', '--n_warm_up_epoch=0',
+            '--n_epochs_stop=10', '--batch_size=64', '--history_size=100', '--lr=5e-4',
+            '--session_level=entry', '--window_size=100', '--step_size=100',
+            '--output_dir=experimental_results/bgl/', '--is_process'
+        ],
+        capture_output=True, text=True
+    )
+
+    return render_template('spike_log.html', output=result.stdout)
+
+
 @app.route("/level_time")
 def level_time():
     return render_template("level_time.html")
