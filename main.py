@@ -2,7 +2,7 @@ import os
 import subprocess
 
 import numpy as np
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 import pandas as pd
 import pymysql
 from sqlalchemy import create_engine
@@ -15,11 +15,62 @@ app.config['UPLOAD_FOLDER'] = 'uploads/'
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '0210070029Xu',
+    'password': 'root',
     'database': 'logdatabase',
     'port': 3306,
     'ssl': {'ssl': {}}
 }
+
+# 配置上传文件夹
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'parser')
+
+def execute_sql_file(file_path):
+    connection = pymysql.connect(**db_config)
+    cursor = connection.cursor()
+    with open(file_path, 'r') as file:
+        sql_statements = file.read().split(';')
+        for statement in sql_statements:
+            if statement.strip():
+                cursor.execute(statement)
+    connection.commit()
+    cursor.close()
+    connection.close()
+    
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return 'No file part'
+    file = request.files['file']
+    if file.filename == '':
+        return 'No selected file'
+    if file:
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'HDFS_2k.log')
+        file.save(file_path)
+        original_directory = os.getcwd()  # 保存当前工作目录
+        try:
+            # 切换到 parser 目录并执行 parser.py 脚本
+            os.chdir(app.config['UPLOAD_FOLDER'])
+            result = subprocess.run(['python', 'demo.py'], check=True, capture_output=True, text=True)
+            print("Parser output:", result.stdout)
+            
+            # 执行 insert.py 脚本
+            result = subprocess.run(['python', 'insert.py'], check=True, capture_output=True, text=True)
+            print("Insert output:", result.stdout)
+            
+            # 切换回原来的工作目录
+            os.chdir(original_directory)
+            
+            # 读取 parser/insert_statements.txt 文件内容并执行 SQL 语句
+            sql_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'insert_statements.txt')
+            execute_sql_file(sql_file_path)
+            
+            return 'File successfully uploaded, processed, and SQL executed'
+        except subprocess.CalledProcessError as e:
+            # 切换回原来的工作目录
+            os.chdir(original_directory)
+            print(f"Error during processing: {e.stderr}")
+            return f'Error during processing: {e.stderr}'
+    return 'File upload failed'
 
 def login_required(f):
     @wraps(f)
