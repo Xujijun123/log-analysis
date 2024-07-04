@@ -99,8 +99,10 @@
         }
         .log-buttons {
             display: flex;
-            justify-content: flex-start;
-            margin-bottom: 20px;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+    gap: 15px;
+    margin-bottom: 20px;
         }
         .log-buttons button {
             margin-right: 10px;
@@ -127,6 +129,51 @@
             background-color: #f2f2f2;
             text-align: left;
         }
+        .run-button {
+            background-color: #f8f9fa; /* 浅白色 */
+            color: #000000; /* 黑色字体 */
+            border: 1.5px solid #000000; /* 黑色边框 */
+            border-radius: 5px; /* 变圆滑 */
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            justify-content: center; /* 居中对齐 */
+            align-items: center; /* 垂直居中 */
+        }
+        .run-button:hover {
+            background-color: #000000; /* 黑色背景 */
+            color: #ffffff; /* 白色字体 */
+        }
+        
+        
+        .log-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .log-buttons button {
+            margin-right: 10px;
+            padding: 20px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 25px;
+            color: black;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s, transform 0.3s;
+        }
+        
+        .log-buttons button:hover {
+            transform: translateY(-2px);
+        }
+        
+
+        .log-buttons button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -146,7 +193,93 @@
     </div>
     <div class="content">
         <h1>日志告警分析</h1>
+        <div class="log-buttons">
 
+        <button class="log-button" onclick="runPythonCommand()">使用LogClass模型进行异常检测</button>
+        </div>
+        <!-- 按钮容器 -->
+        <div id="resultButtonContainer"></div>
     </div>
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); text-align: center; padding-top: 20%;">
+        <p id="loadingMessage" style="color: white; font-size: 18px;">正在检测，请稍候...</p>
+    </div>
+    
+
+    <script>
+        function runPythonCommand() {
+            // 显示加载状态
+            showLoading();
+        
+            fetch('/run_python_command', {
+                method: 'POST',
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('检测失败');
+                }
+            })
+            .then(data => {
+                // 隐藏加载状态，并显示成功消息
+                hideLoading();
+                alert(data.message);
+
+                // 创建并显示显示结果的按钮
+                createResultButton();
+            })
+            .catch(error => {
+                // 隐藏加载状态，并显示错误消息
+                hideLoading();
+                console.error('Error:', error);
+                alert('检测失败');
+            });
+        }
+        
+        function showLoading() {
+            // 显示加载状态的逻辑，例如显示一个加载动画或进度条
+            // 可以使用类似于显示一个遮罩层或旋转动画的方式
+            // 示例代码：显示一个简单的加载信息
+            document.getElementById('loadingMessage').innerText = '正在检测，请稍候...';
+            document.getElementById('loadingOverlay').style.display = 'block';
+        }
+        
+        function hideLoading() {
+            // 隐藏加载状态的逻辑
+            // 示例代码：隐藏加载信息
+            document.getElementById('loadingMessage').innerText = '';
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+        
+        function createResultButton() {
+            var button = document.createElement('button');
+            button.innerText = '显示结果';
+            button.className = 'run-button';
+            button.onclick = function() {
+                window.location.href = '/show_results';
+            };
+        
+            document.getElementById('resultButtonContainer').appendChild(button);
+        }
+        
+        function getCurrentDirectory() {
+            fetch('/get_current_directory')
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('获取当前目录时出错');
+                }
+            })
+            .then(data => {
+                alert('当前目录: ' + data.current_directory);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('获取当前目录时出错');
+            });
+        }
+        
+    </script>
 </body>
 </html>

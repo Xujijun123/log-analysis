@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Show Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .content {
+            margin: 20px;
+        }
+        .log-table {
+            width: auto;
+            margin-top: 20px;
+            overflow-x: auto;
+            white-space: normal; /* 允许文本自动换行 */
+            word-break: break-all;
+        }
+
+        .log-table th, .log-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            word-wrap: break-word; /* 在单词边界处换行 */
+            white-space: normal; /* 允许文本自动换行 */
+        }
+
+        .log-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            outline: none;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 9px #999;
+            margin-top: 20px;
+        }
+
+        .button:hover {background-color: #3e8e41}
+
+        .button:active {
+            background-color: #3e8e41;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Log Details</h1>
+        {% if logs %}
+        <table class="log-table">
+            <thead>
+                <tr>
+                    {% for column in columns %}
+                    <th>{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    {% for value in log %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No log details found.</p>
+        {% endif %}
+        <a href="log_class" class="button">Return</a>
+    </div>
+</body>
+</html>

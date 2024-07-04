@@ -6,57 +6,93 @@
     <title>Admin_Mainpage</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.css">
     <style>
+        /* 弹窗背景 */
+        #alertBox {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        /* 弹窗消息 */
+        #alertMessage {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        /* 关闭按钮 */
+        #alertBox button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #333;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* 关闭按钮悬停效果 */
+        #alertBox button:hover {
+            background-color: #555;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
         }
+
         .sidebar {
-    width: 250px;
-    background-color: #333;
-    color: white;
-    height: 100vh;
-    position: fixed;
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* 水平居中 */
-}
+            width: 250px;
+            background-color: #333;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    .sidebar img {
-        border-radius: 50%;
-        display: block;
-        margin: 0 auto;
-        width: 80px;
-    }
-
-    .sidebar h2 {
-        text-align: center;
-        margin: 10px 0;
-    }
-
-    .sidebar nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 20px 0;
-    }
-
-    .sidebar nav ul li {
-        margin-bottom: 10px;
-        text-align: center;
-    }
-
-    .sidebar nav ul li a {
-        color: white;
-        text-decoration: none;
-        display: block;
-    }
-
-    .sidebar nav ul li a:hover {
-        color: #ddd;
-    }
-
+        .sidebar img {
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto;
+            width: 80px;
+        }
+        .sidebar h2 {
+            text-align: center;
+            margin: 10px 0;
+        }
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        .sidebar nav ul li {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .sidebar nav ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar nav ul li a:hover {
+            color: #ddd;
+        }
         .content {
             margin-left: 250px;
             padding: 20px;
@@ -66,15 +102,26 @@
             padding: 20px;
             margin-bottom: 20px;
             border-radius: 8px;
+            height:400px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .card h3 {
             margin-top: 0;
         }
+        .card2 {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card2 h3 {
+            margin-top: 0;
+        }
         .chart-container {
             position: relative;
-            height: 40vh;
-            width: 80vw;
+            width: 100%;
+            height: 100%;
         }
         .stats {
             display: flex;
@@ -87,42 +134,80 @@
             width: 150px;
             text-align: center;
         }
-        .operator-management {
-            list-style-type: none;
-            padding: 0;
+        .upload-card {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .upload-card input[type="file"] {
             display: none;
         }
-        .operator-management li a {
-            font-size: 14px; 
-            color: #ccc;
-            text-decoration: none;
-            display: block;
-            padding: 2px 0; /* 内边距 */
+        .upload-card label {
+            display: inline-block;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            border-radius: 4px;
         }
-        .operator-management li a:hover {
-            color: #fff;
+        .upload-card label:hover {
+            background-color: #555;
         }
+        .upload-card input[type="file"] {
+            display: none;
+        }
+        
+        .upload-card .custom-button {
+            display: inline-block;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+            margin: 5px;
+        }
+        
+        .upload-card .custom-button:hover {
+            background-color: #555;
+        }
+        .upload-card input[type="file"] {
+            display: none;
+        }
+        
+        .upload-card .custom-button {
+            display: inline-block;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+            margin: 5px;
+        }
+        
+        .upload-card .custom-button:hover {
+            background-color: #555;
+        }
+        
+        
     </style>
-    <script>
-        function toggleOperatorManagement() {
-            var operatorManagement = document.getElementById('operator-management');
-            if (operatorManagement.style.display === 'none' || operatorManagement.style.display === '') {
-                operatorManagement.style.display = 'block';
-            } else {
-                operatorManagement.style.display = 'none';
-            }
-        }
-    </script>
 </head>
 <body>
     <div class="sidebar">
-        <img src="{{ url_for('static', filename='images/avatar.png') }}" alt="User Avatar">
+        <img src="{{ url_for('static', filename='images/operator.png') }}" alt="User Avatar">
         <h2>{{ session['username'] }}</h2>
         <nav>
             <ul>
                 <li><a href="#">Home</a></li>
-                <li><a href="#">退出账户</a></li>
+                <li><a href="/">退出账户</a></li>
                 <li><a href="/logs">日志查看</a></li>
+                <li><a href="/search_logs">日志检索</a></li>
+                <li><a href="/log_analysis">日志统计与分析</a></li>
+                <li><a href="/log_warning">日志告警分析</a></li>
                 <li><a href="javascript:void(0)" onclick="toggleOperatorManagement()">人员管理</a></li>
                 <ul id="operator-management" class="operator-management">
                     <li><a href="/manage_operators/view">查看运维人员</a></li>
@@ -135,15 +220,15 @@
     </div>
     <div class="content">
         <h1>Welcome to the Admin_Mainpage</h1>
-        <div class="card">
+        <div class="card2">
             <h3>Statistics Overview</h3>
             <div class="stats">
                 <div class="stat">
-                    <h4>1649</h4>
+                    <h4>20</h4>
                     <p>Total Visits</p>
                 </div>
                 <div class="stat">
-                    <h4>6</h4>
+                    <h4>3</h4>
                     <p>New Users</p>
                 </div>
                 <div class="stat">
@@ -151,7 +236,7 @@
                     <p>User Level</p>
                 </div>
                 <div class="stat">
-                    <h4>100000</h4>
+                    <h4>13</h4>
                     <p>Industry Average</p>
                 </div>
                 <div class="stat">
@@ -160,6 +245,22 @@
                 </div>
             </div>
         </div>
+        <div class="upload-card">
+            <h3>Upload File</h3>
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                <input type="file" id="fileUpload" name="file">
+                <label for="fileUpload" class="custom-button">Choose File</label>
+                <button type="submit" class="custom-button">Upload</button>
+            </form>
+            <div id="status" style="display: none;">正在模式解析...</div>
+        </div>
+        <div id="alertBox">
+            <p id="alertMessage"></p>
+            <button onclick="closeAlert()">Close</button>
+        </div>
+        
+        
+        
         <div class="card">
             <h3>Usage Statistics</h3>
             <div class="chart-container">
@@ -172,5 +273,92 @@
                 <canvas id="activityChart"></canvas>
             </div>
         </div>
+    
     </div>
-    <script src="https://cdnjs.cloudflare.c
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script>
+        document.getElementById('uploadForm').onsubmit = function(event) {
+            event.preventDefault();
+            document.getElementById('status').style.display = 'block';
+
+            var formData = new FormData(this);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('status').style.display = 'none';
+                showAlert(data);
+            })
+            .catch(error => {
+                document.getElementById('status').style.display = 'none';
+                showAlert('Error during processing: ' + error.message);
+            });
+        };
+
+        function showAlert(message) {
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('alertBox').style.display = 'block';
+        }
+        
+        function closeAlert() {
+            document.getElementById('alertBox').style.display = 'none';
+        }
+        
+
+        // Sample data for Usage Statistics
+        var ctx = document.getElementById('usageChart').getContext('2d');
+        var usageChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                datasets: [{
+                    label: 'Usage Statistics',
+                    data: [65, 59, 80, 81, 56, 55],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Sample data for User Activity
+        var ctx2 = document.getElementById('activityChart').getContext('2d');
+        var activityChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                datasets: [{
+                    label: 'User Activity',
+                    data: [12, 19, 3, 5, 2, 3, 7],
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+        
+</body>
+</html>

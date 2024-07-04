@@ -276,7 +276,50 @@ def log_warning():
 def log_class():
     return render_template('log_class.html')
 
+@app.route('/run_python_command', methods=['POST'])
+def run_python_command():
+    try:
+        # 获取当前工作目录
+        original_dir = os.getcwd()
 
+        # 切换到指定目录
+        model_folder = './model'
+        os.chdir(model_folder)
+
+        # 构建要执行的命令
+        command = [
+            'python', '-m', 'LogClass.logclass',
+            '--train', '--kfold', '3',
+            '--logs_type', 'open_hdfs',
+            '--raw_logs', './LogClass/data/open_source_logs/hdfs',
+            '--report', 'macro', '--train'
+        ]
+
+        # 执行命令并捕获输出
+        result = subprocess.run(command, capture_output=True, text=True)
+
+        if result.returncode == 0:
+            # 切换回原始目录
+            os.chdir(original_dir)
+            return jsonify({'message': '检测成功', 'output': result.stdout}), 200
+        else:
+            # 切换回原始目录
+            os.chdir(original_dir)
+            return jsonify({'message': '检测失败，请重试', 'error': result.stderr}), 500
+    except Exception as e:
+        # 切换回原始目录
+        os.chdir(original_dir)
+        return jsonify({'message': '检测失败，请重试', 'error': str(e)}), 500
+    
+
+@app.route('/get_current_directory', methods=['GET'])
+def get_current_directory():
+    try:
+        current_directory = os.getcwd()  # 获取当前工作目录
+        return jsonify({'current_directory': current_directory}), 200
+    except Exception as e:
+        return jsonify({'message': '获取当前目录时出错', 'error': str(e)}), 500
+    
 @app.route('/event_frequency')
 def event_frequency():
     return render_template('event_frequency.html')
@@ -447,6 +490,30 @@ def delete_operator():
         return render_template('delete_operator.html', operators=operators)
     except pymysql.MySQLError as e:
         return render_template('admin_mainpage', error=f'数据库错误：{e}')
+
+@app.route('/show_results', methods=['GET'])
+def show_results():
+    try:
+        connection = pymysql.connect(**db_config)
+        cursor = connection.cursor()
+        
+        # 指定的 LineId 列表
+        line_ids_to_fetch = [29, 91, 93, 89, 169, 1, 9, 10, 13, 30]
+        format_strings = ','.join(['%s'] * len(line_ids_to_fetch))
+        
+        sql = f"SELECT * FROM hdfs_structured WHERE LineId IN ({format_strings})"
+        cursor.execute(sql, line_ids_to_fetch)
+        logs = cursor.fetchall()
+        
+        cursor.close()
+        connection.close()
+        
+        # 获取列名
+        columns = [desc[0] for desc in cursor.description]
+        
+        return render_template('show_results.html', logs=logs, columns=columns)
+    except pymysql.MySQLError as e:
+        return render_template('show_results.html', error=f'数据库错误：{e}')
 
 
 
