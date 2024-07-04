@@ -67,6 +67,67 @@
             height: 400px; 
             width: 100%; 
         }
+        /* 内容样式 */
+        .content {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        /* 表单组样式 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        /* 标签样式 */
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        /* 输入框样式 */
+        .form-group input[type="date"],
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #333;
+            font-size: 16px;
+        }
+
+        /* 按钮样式 */
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            color:black;
+            background-color: #fff;
+
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 卡片样式 */
+        .card {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        /* 图表容器样式 */
+        #chartContainer {
+            margin-top: 20px;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -98,7 +159,7 @@
             <input type="date" id="endDate">
         </div>
         <div class="form-group">
-            <label for="logSource">选择日志来源:</label>
+            <label for="logSource">日志来源:</label>
             <select id="logSource">
                 <option value="hdfs">HDFS 日志</option>
                 <!-- 可以添加其他日志来源选项 -->

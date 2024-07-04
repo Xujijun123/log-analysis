@@ -267,10 +267,14 @@ def view_logs():
 @app.route('/log_analysis')
 def log_analysis():
     return render_template('log_analysis.html')
+
 @app.route('/log_warning')
 def log_warning():
     return render_template('log_warning.html')
 
+@app.route('/log_class')
+def log_class():
+    return render_template('log_class.html')
 
 
 @app.route('/event_frequency')

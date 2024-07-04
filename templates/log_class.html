@@ -3,17 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logs</title>
+    <title>log-anomaly</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
-        }
-        @font-face {
-            font-family: 'STZhongsong';
-            src: local('华文中宋'), local('STZhongsong');
         }
         .sidebar {
             width: 250px;
@@ -101,49 +97,16 @@
         .pagination li a:hover {
             text-decoration: underline;
         }
-        .log-buttons-container {
-            text-align: center;
-            background-color: #ffffff;
-            padding: 20px 40px;
-            border-radius: 8px;
-            margin-top: 100px;
-
-            margin-bottom: 100px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .subtitle {
-            font-size: 1.2em;
-            font-family:'STZhongsong', Arial, sans-serif;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
         .log-buttons {
             display: flex;
-            justify-content: center;
-            gap: 15px;
+            justify-content: flex-start;
+            margin-bottom: 20px;
         }
-
         .log-buttons button {
             margin-right: 10px;
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
-            border: none;
-            border-radius: 25px;
-            color: black;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background 0.3s, transform 0.3s;
-        }
-        
-        .log-buttons button:hover {
-            transform: translateY(-2px);
-        }
-        
-
-        .log-buttons button:hover {
-            background-color: #45a049;
         }
         .log-table {
             width: auto;
@@ -152,56 +115,17 @@
             white-space: normal; /* 允许文本自动换行 */
             word-break: break-all;
         }
+
         .log-table th, .log-table td {
             border: 1px solid #ddd;
             padding: 8px;
             word-wrap: break-word; /* 在单词边界处换行 */
             white-space: normal; /* 允许文本自动换行 */
         }
+
         .log-table th {
             background-color: #f2f2f2;
             text-align: left;
-        }
-        .info-card {
-            padding: 20px;
-            margin-bottom: 20px;
-            background-color: #f9f9f9;
-            border-left: 5px solid #007bff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-        }
-        .info-card h3 {
-            margin-top: 0;
-        }
-        .content {
-            margin-left: 250px;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-radius: 8px;
-        }
-        .subtitle {
-            font-size: 1.2em;
-            color: #555;
-            margin-bottom: 20px;
-        }
- 
-        .info-card {
-            padding: 20px;
-            margin-top: 20px;
-            background-color: #f9f9f9;
-            border-left: 5px solid #007bff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-        }
-        .info-card h3 {
-            margin-top: 0;
-            font-size: 1.4em;
-            color: #333;
-        }
-        .info-card p {
-            font-size: 1em;
-            color: #555;
         }
     </style>
 </head>
@@ -221,19 +145,8 @@
         </nav>
     </div>
     <div class="content">
-        <h1>日志统计与分析</h1>
-        <div class="log-buttons-container">
-        <p class="subtitle">请选择分析方式</p>
+        <h1>日志告警分析</h1>
 
-            <div class="log-buttons">
-                <button class="log-button" onclick="location.href='/event_frequency'">事件频率分析</button>
-                <button class="log-button" onclick="location.href='/time_series'">时间序列分析</button>
-            </div>
-        </div>
-        <div class="info-card">
-            <h3>关于日志分析</h3>
-            <p>日志分析是对日志数据进行处理和分析，以提取有用的信息和发现潜在的规律。它可以帮助您了解系统运行状况、检测异常行为以及进行性能优化。</p>
-        </div>
     </div>
 </body>
 </html>
