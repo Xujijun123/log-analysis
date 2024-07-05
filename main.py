@@ -1,6 +1,6 @@
 import os
 import subprocess
-
+import uuid
 import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 import pandas as pd
@@ -22,7 +22,7 @@ db_config = {
 }
 
 # 配置上传文件夹
-app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'parser')
+app.config['UPLOAD_FOLDER2'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'parser')
 
 def execute_sql_file(file_path):
     connection = pymysql.connect(**db_config)
@@ -35,7 +35,12 @@ def execute_sql_file(file_path):
     connection.commit()
     cursor.close()
     connection.close()
-    
+
+ALLOWED_EXTENSIONS = {'log', 'txt'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -43,13 +48,17 @@ def upload_file():
     file = request.files['file']
     if file.filename == '':
         return 'No selected file'
-    if file:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'HDFS_2k.log')
+    if file.content_length > 1024 * 1024 * 1024: # 文件大小超过1GB
+        return 'File size exceeds 1GB'
+    if file and allowed_file(file.filename):
+        random_suffix = uuid.uuid4().hex
+        filename = f'HDFS_2k_{random_suffix}.log'
+        file_path = os.path.join(app.config['UPLOAD_FOLDER2'], filename)
         file.save(file_path)
         original_directory = os.getcwd()  # 保存当前工作目录
         try:
             # 切换到 parser 目录并执行 parser.py 脚本
-            os.chdir(app.config['UPLOAD_FOLDER'])
+            os.chdir(app.config['UPLOAD_FOLDER2'])
             result = subprocess.run(['python', 'demo.py'], check=True, capture_output=True, text=True)
             print("Parser output:", result.stdout)
             
@@ -61,7 +70,7 @@ def upload_file():
             os.chdir(original_directory)
             
             # 读取 parser/insert_statements.txt 文件内容并执行 SQL 语句
-            sql_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'insert_statements.txt')
+            sql_file_path = os.path.join(app.config['UPLOAD_FOLDER2'], 'insert_statements.txt')
             execute_sql_file(sql_file_path)
             
             return 'File successfully uploaded, processed, and SQL executed'
@@ -70,7 +79,8 @@ def upload_file():
             os.chdir(original_directory)
             print(f"Error during processing: {e.stderr}")
             return f'Error during processing: {e.stderr}'
-    return 'File upload failed'
+    return 'File upload failed, you can only upload log or txt files'
+
 
 def login_required(f):
     @wraps(f)

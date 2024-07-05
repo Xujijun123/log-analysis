@@ -239,7 +239,7 @@
             </div>
         </div>
         <div class="upload-card">
-            <h3>Upload File</h3>
+            <h3>Upload Log File (log or txt files)</h3>
             <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
                 <input type="file" id="fileUpload" name="file">
                 <label for="fileUpload" class="custom-button">Choose File</label>
@@ -272,10 +272,22 @@
     <script>
         document.getElementById('uploadForm').onsubmit = function(event) {
             event.preventDefault();
+            var fileInput = document.getElementById('fileUpload');
+            var file = fileInput.files[0];
+        
+            if (!file) {
+                showAlert('No selected file');
+                return;
+            }
+        
+            if (file.size > 1024 * 1024 * 1024) { // 文件大小超过1GB
+                showAlert('File size exceeds 1GB');
+                return;
+            }
+        
             document.getElementById('status').style.display = 'block';
-
             var formData = new FormData(this);
-
+        
             fetch('/upload', {
                 method: 'POST',
                 body: formData
@@ -290,6 +302,7 @@
                 showAlert('Error during processing: ' + error.message);
             });
         };
+        
 
         function showAlert(message) {
             document.getElementById('alertMessage').innerText = message;
