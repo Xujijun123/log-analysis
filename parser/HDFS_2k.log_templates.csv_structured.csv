@@ -1,0 +1,3 @@
+LineId,Date,Time,Pid,Level,Component,Content,EventId,EventTemplate,ParameterList
+1,"E12,Received",block,blk_<*>,src:,/<*>:<*> dest,/<*>:<*> of size <*>,15f23e52,/<*>:<*> of size <*>,"['<*>:<*>', '<*>']"
+2,"E13,Receiving",block,blk_<*>,src:,/<*>:<*> dest,/<*>:<*>,7b57a1c9,/<*>:<*>,['<*>:<*>']

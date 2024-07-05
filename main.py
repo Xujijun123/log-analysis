@@ -15,9 +15,9 @@ app.config['UPLOAD_FOLDER'] = 'uploads/'
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'abc123',
+    'password': '2002119Li.',
     'database': 'logdatabase',
-    'port': 3316,
+    'port': 3306,
     'ssl': {'ssl': {}}
 }
 
@@ -407,6 +407,49 @@ def upload_log_files1():
 
     return render_template('spike_log.html', output=result.stdout)
 
+@app.route('/light_log')
+def light_log():
+    return render_template('light_log.html')
+
+@app.route('/upload_log_files2', methods=['POST', 'GET'])
+def upload_log_files2():
+    if request.method == 'POST':
+        file = request.files.get('file')
+        if not file or file.filename == '':
+            return redirect(request.url)  # 如果没有文件或文件名为空，则重定向回上传页面
+
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(file_path)
+        print("File saved at", file_path)  # 确认文件路径
+
+        try:
+            # 运行 train.py 和 test.py
+            train_command = ['python', 'model/LightLog/train.py']
+            train_result = subprocess.run(train_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            print("Train script executed with return code", train_result.returncode)
+            print("Output:", train_result.stdout)
+            print("Errors:", train_result.stderr)
+            test_command = ['python', 'model/LightLog/test.py']
+            test_result = subprocess.run(test_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            print("Test script executed with return code", train_result.returncode)
+            print("Output:", train_result.stdout)
+            print("Errors:", train_result.stderr)
+
+            # 获取输出和错误信息
+            if train_result.returncode == 0 and test_result.returncode == 0:
+                combined_output = f"Training Output:\n{train_result.stdout}\nTesting Output:\n{test_result.stdout}"
+                return render_template('light_log.html', output=combined_output)
+            else:
+                errors = f"Training Errors:\n{train_result.stderr}\nTesting Errors:\n{test_result.stderr}"
+                return render_template('light_log.html', error=errors)
+
+        except subprocess.CalledProcessError as e:
+            return f"An error occurred while running the scripts: {e.stderr}"
+        except Exception as e:
+            return str(e)  
+
+    # GET 请求返回上传表单页面
+    return render_template('light_log.html')
 
 @app.route("/level_time")
 def level_time():
