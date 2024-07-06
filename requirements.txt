@@ -1,0 +1,11 @@
+Flask
+pymysql
+SQLAlchemy
+pandas
+numpy
+tensorflow
+pytorch
+scikit-learn
+jinja2
+matplotlib
+seaborn
