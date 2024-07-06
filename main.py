@@ -15,7 +15,7 @@ app.config['UPLOAD_FOLDER'] = 'uploads/'
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '2002119Li.',
+    'password': 'root',
     'database': 'logdatabase',
     'port': 3306,
     'ssl': {'ssl': {}}
@@ -373,6 +373,16 @@ def upload_log_files():
             # 将输出内容传递给模板
 
             anomalous_lines_path = os.path.join(app.config['UPLOAD_FOLDER'], 'anomalous_lines.csv')
+            df = pd.read_csv(anomalous_lines_path, header=0)
+
+            # 获取现有的列名
+            current_columns = df.columns.tolist()
+            # 为第一列添加列名
+            new_columns = ['LineId'] + current_columns[1:]
+            # 设置新的列名
+            df.columns = new_columns
+            # 保存回CSV文件
+            df.to_csv(anomalous_lines_path, index=False)
             if os.path.exists(anomalous_lines_path):
                 anomalous_lines = pd.read_csv(anomalous_lines_path)
                 with open(log_path, 'r') as file:
